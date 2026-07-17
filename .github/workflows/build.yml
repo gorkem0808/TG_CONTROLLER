@@ -77,7 +77,7 @@ jobs:
         run: python -m py_compile desktop/app.py
 
       - name: Build EXE
-        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V005 desktop/app.py
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V005_1 desktop/app.py
 
       - name: Prepare Windows artifact
         shell: pwsh
