@@ -1,0 +1,18 @@
+TG_CONTROLLER V005.1 BAGLANTI DUZELTMESI
+
+Duzeltilen sorun:
+Windows USB CDC portu acilir acilmaz gonderilen PING/INFO komutlari bazen kayboluyordu.
+Manager bu nedenle BAGLANIYOR ekraninda kalabiliyordu.
+
+V005.1:
+- Port acildiktan sonra 1.2 saniye bekler.
+- PING ve INFO komutlarini 5 kez tekrarlar.
+- Dogru cihaz cevabini kontrol eder.
+- Cevap gelmezse CEVAP YOK yazar.
+
+Yukleme:
+1. Paketi GitHub'a Upload files ile yukle.
+2. .github/workflows/build.yml gizli kalirsa,
+   GITHUB_WORKFLOW_BUILD_V005_1.yml icerigiyle degistir.
+3. Actions sonucunda TG_CONTROLLER_MANAGER_V005_1_WINDOWS dosyasini indir.
+4. UF2 dosyalarini yeniden yuklemek gerekmez; firmware V005 olarak kalir.

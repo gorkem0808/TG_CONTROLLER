@@ -12,7 +12,7 @@ import serial
 from serial.tools import list_ports
 
 
-APP_TITLE = "TG_CONTROLLER_MANAGER V005"
+APP_TITLE = "TG_CONTROLLER_MANAGER V005.1"
 BAUD_RATE = 115200
 
 BG = "#111821"
@@ -138,6 +138,7 @@ class TGControllerManager(tk.Tk):
         }
 
         self.status_bar_var = tk.StringVar(value="HAZIR")
+        self.handshake_attempts = {key: 0 for key in IDENTITIES}
         self.page_frames: dict[str, tk.Frame] = {}
         self.nav_buttons: dict[str, tk.Button] = {}
         self.port_combos: dict[str, ttk.Combobox] = {}
@@ -177,7 +178,7 @@ class TGControllerManager(tk.Tk):
 
         tk.Label(
             header,
-            text="V005",
+            text="V005.1",
             bg=PANEL,
             fg=ACCENT,
             font=("Segoe UI", 11, "bold"),
@@ -567,12 +568,42 @@ class TGControllerManager(tk.Tk):
 
         self.status_vars[key].set("BAĞLANIYOR")
         self._set_dot(key, WARN)
-        self._append_log(key, f"Bağlandı: {device}")
+        self._append_log(key, f"Port açıldı: {device}")
+        self.handshake_attempts[key] = 0
+
+        # Windows bazı USB CDC cihazlarında port açılır açılmaz gönderilen
+        # ilk komutları kaybedebilir. İlk sorguyu gecikmeli başlat.
+        self.after(1200, lambda selected=key: self._handshake(selected))
+
+    def _handshake(self, key: str) -> None:
+        session = self.sessions[key]
+        if not session.connected:
+            return
+
+        if self.status_vars[key].get() == "BAĞLI":
+            return
+
+        self.handshake_attempts[key] += 1
+        attempt = self.handshake_attempts[key]
+        self._append_log(key, f"Bağlantı sorgusu {attempt}/5")
+
         self.send_command(key, "PING", warn=False)
-        self.send_command(key, "INFO", warn=False)
+        self.after(180, lambda selected=key: self.send_command(selected, "INFO", warn=False))
+
+        if attempt < 5:
+            self.after(1000, lambda selected=key: self._handshake(selected))
+        else:
+            self.after(1200, lambda selected=key: self._handshake_timeout(selected))
+
+    def _handshake_timeout(self, key: str) -> None:
+        if self.sessions[key].connected and self.status_vars[key].get() != "BAĞLI":
+            self.status_vars[key].set("CEVAP YOK")
+            self._set_dot(key, BAD)
+            self._append_log(key, "Cihaz seri komutlara cevap vermedi.")
 
     def disconnect_device(self, key: str) -> None:
         self.sessions[key].disconnect()
+        self.handshake_attempts[key] = 0
         self.status_vars[key].set("BAĞLI DEĞİL")
         self.version_vars[key].set("-")
         self._set_dot(key, BAD)
@@ -618,8 +649,17 @@ class TGControllerManager(tk.Tk):
 
     def _process_line(self, key: str, line: str) -> None:
         if line.startswith("PONG"):
-            self.status_vars[key].set("BAĞLI")
-            self._set_dot(key, OK)
+            expected_pong = {
+                "controller": "PONG TG_CONTROLLER",
+                "p1": "PONG TG_GUN_P1",
+                "p2": "PONG TG_GUN_P2",
+            }[key]
+            if line.startswith(expected_pong):
+                self.status_vars[key].set("BAĞLI")
+                self._set_dot(key, OK)
+            else:
+                self.status_vars[key].set("YANLIŞ CİHAZ")
+                self._set_dot(key, BAD)
         elif line.startswith("INFO"):
             expected = IDENTITIES[key].expected_token
             if expected not in line:
