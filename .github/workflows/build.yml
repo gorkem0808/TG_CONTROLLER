@@ -1,4 +1,4 @@
-name: Build TG_CONTROLLER V005
+name: Build TG_CONTROLLER V005.1
 
 on:
   push:
@@ -83,13 +83,13 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
-          Copy-Item dist/TG_CONTROLLER_MANAGER_V005.exe artifact/
-          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V005.exe -Algorithm SHA256).Hash.ToLower()
-          "$hash *TG_CONTROLLER_MANAGER_V005.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
+          Copy-Item dist/TG_CONTROLLER_MANAGER_V005_1.exe artifact/
+          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V005_1.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash *TG_CONTROLLER_MANAGER_V005_1.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
 
       - name: Upload Windows manager
         uses: actions/upload-artifact@v4
         with:
-          name: TG_CONTROLLER_MANAGER_V005_WINDOWS
+          name: TG_CONTROLLER_MANAGER_V005_1_WINDOWS
           path: artifact/
           if-no-files-found: error
