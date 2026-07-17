@@ -1,0 +1,51 @@
+name: Build TG_CONTROLLER UF2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+      - name: Download Pico SDK 2.2.0
+        run: |
+          git clone --depth 1 --branch 2.2.0 --recurse-submodules \
+            https://github.com/raspberrypi/pico-sdk.git "$RUNNER_TEMP/pico-sdk"
+          echo "PICO_SDK_PATH=$RUNNER_TEMP/pico-sdk" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DPICO_BOARD=pico -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --target TG_CONTROLLER
+
+      - name: Verify UF2
+        run: test -f build/TG_CONTROLLER.uf2
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p artifact
+          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V001.uf2
+          sha256sum artifact/TG_CONTROLLER_V001.uf2 > artifact/SHA256SUMS.txt
+
+      - name: Upload UF2
+        uses: actions/upload-artifact@v4
+        with:
+          name: TG_CONTROLLER_V001_UF2
+          path: artifact/
+          if-no-files-found: error
