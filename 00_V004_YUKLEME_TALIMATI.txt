@@ -1,0 +1,8 @@
+TG_CONTROLLER V004 YUKLEME
+
+1. ZIP'i Extract All ile aç.
+2. Klasörün içindeki normal dosya ve klasörleri GitHub'a Upload files ile yükle.
+3. Windows .github klasörünü gizleyebilir.
+4. Bu durumda GitHub'daki .github/workflows/build.yml dosyasını aç.
+5. Paketteki GITHUB_WORKFLOW_BUILD_V004.yml dosyasının içeriğiyle tamamen değiştir.
+6. İlk satır: name: Build TG_CONTROLLER V004

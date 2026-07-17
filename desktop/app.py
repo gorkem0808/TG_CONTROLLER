@@ -10,7 +10,7 @@ import serial
 from serial.tools import list_ports
 
 
-APP_TITLE = "TG_CONTROLLER_MANAGER V003"
+APP_TITLE = "TG_CONTROLLER_MANAGER V004"
 BAUD_RATE = 115200
 
 BG = "#121821"
@@ -110,6 +110,7 @@ class TGControllerManager(tk.Tk):
 
         self._add_nav_button(sidebar, "dashboard", "Dashboard")
         self._add_nav_button(sidebar, "controller", "Controller")
+        self._add_nav_button(sidebar, "player1", "Player 1")
         self._add_nav_button(sidebar, "firmware", "Firmware")
         self._add_nav_button(sidebar, "settings", "Settings")
         self._add_nav_button(sidebar, "logs", "Logs")
@@ -128,6 +129,7 @@ class TGControllerManager(tk.Tk):
 
         self._create_dashboard_page()
         self._create_controller_page()
+        self._create_player1_page()
         self._create_firmware_page()
         self._create_settings_page()
         self._create_logs_page()
@@ -286,6 +288,31 @@ class TGControllerManager(tk.Tk):
         relay_buttons.pack(fill="x", padx=16, pady=(0, 16))
         self._button(relay_buttons, "Röle 1 Test", lambda: self.send_command("RELAY 1 PULSE"), width=18).pack(side="left", padx=5)
         self._button(relay_buttons, "Röle 2 Test", lambda: self.send_command("RELAY 2 PULSE"), width=18).pack(side="left", padx=5)
+
+
+    def _create_player1_page(self) -> None:
+        page = self._new_page("player1")
+        self._section_title(page, "Player 1 Gun")
+
+        card = self._card(page, "Canlı X / Y")
+        card.pack(fill="x", padx=24, pady=(0, 12))
+
+        inner = tk.Frame(card, bg=PANEL)
+        inner.pack(fill="x", padx=16, pady=(0, 16))
+
+        self.p1_x_var = tk.StringVar(value="0")
+        self.p1_y_var = tk.StringVar(value="0")
+        self.p1_motion_var = tk.StringVar(value="AKTİF")
+
+        self._info_row(inner, 0, "X ADC", self.p1_x_var)
+        self._info_row(inner, 1, "Y ADC", self.p1_y_var)
+        self._info_row(inner, 2, "Hareket", self.p1_motion_var)
+
+        buttons = tk.Frame(card, bg=PANEL)
+        buttons.pack(fill="x", padx=16, pady=(0, 16))
+        self._button(buttons, "Hareket Aç", lambda: self.send_command("MOTION ON")).pack(side="left", padx=4)
+        self._button(buttons, "Hareket Kapat", lambda: self.send_command("MOTION OFF")).pack(side="left", padx=4)
+        self._button(buttons, "Durumu Oku", lambda: self.send_command("STATUS")).pack(side="left", padx=4)
 
     def _create_firmware_page(self) -> None:
         page = self._new_page("firmware")
@@ -504,6 +531,16 @@ class TGControllerManager(tk.Tk):
             for part in parts:
                 if part.startswith("VERSION="):
                     self.firmware_var.set(part.split("=", 1)[1])
+        elif line.startswith("GUNSTATUS"):
+            values = {}
+            for item in line.split()[1:]:
+                if "=" in item:
+                    key, value = item.split("=", 1)
+                    values[key] = value
+            if hasattr(self, "p1_x_var"):
+                self.p1_x_var.set(values.get("X", "0"))
+                self.p1_y_var.set(values.get("Y", "0"))
+                self.p1_motion_var.set("AKTİF" if values.get("MOTION") == "1" else "PASİF")
         elif line.startswith("STATUS"):
             values = {}
             for item in line.split()[1:]:
