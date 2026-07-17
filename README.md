@@ -1,14 +1,24 @@
-# TG_CONTROLLER V004
+# TG_CONTROLLER V005
 
-V004 ile Player 1 Gun Pico desteği eklendi.
+Controller, Player 1 ve Player 2 aynı sürümde birlikte derlenir.
 
-## Üretilen dosyalar
+## GitHub çıktıları
 
-- `TG_CONTROLLER_V004.uf2`
-- `TG_GUN_P1_V004.uf2`
-- `TG_CONTROLLER_MANAGER_V004.exe`
+UF2 paketi:
 
-## Player 1 bağlantıları
+- `TG_CONTROLLER_V005.uf2`
+- `TG_GUN_P1_V005.uf2`
+- `TG_GUN_P2_V005.uf2`
+- `SHA256SUMS.txt`
+
+Windows paketi:
+
+- `TG_CONTROLLER_MANAGER_V005.exe`
+- `SHA256SUMS_WINDOWS.txt`
+
+## Gun bağlantıları
+
+Her iki Gun Pico için bağlantı aynıdır:
 
 | Pico pini | Görev |
 |---|---|
@@ -17,13 +27,19 @@ V004 ile Player 1 Gun Pico desteği eklendi.
 | 3V3 OUT | Potansiyometre besleme |
 | GND | Ortak şase |
 
-Tetik Player 1 Pico'ya bağlanmaz. P1 tetik ana Controller GP4 üzerinde kalır.
+Tetikler ana Controller üzerinde kalır:
 
-## V004 kapsamı
+- P1 tetik: Controller GP4
+- P2 tetik: Controller GP7
 
-- Ham X/Y ADC okuma
-- Player 1 USB cihaz kimliği
-- USB CDC haberleşme
-- Player 1 canlı X/Y Manager ekranı
-- Mouse hareketini aç/kapat komutları
-- Henüz dört köşe kalibrasyonu yoktur
+## V005 testi
+
+1. Controller UF2'yi ana Pico'ya yükle.
+2. P1 UF2'yi Player 1 Pico'ya yükle.
+3. P2 UF2'yi Player 2 Pico'ya yükle.
+4. Manager V005'i aç.
+5. Üç ayrı COM portu doğru cihaz alanlarına seç.
+6. Controller tuşlarını, iki röleyi ve her iki silahın X/Y değerlerini test et.
+7. İki gun için Hareket Aç / Hareket Kapat komutlarını test et.
+
+Kalibrasyon V006 kapsamındadır.

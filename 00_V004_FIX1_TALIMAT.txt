@@ -1,0 +1,18 @@
+TG_CONTROLLER V004 FIX1
+
+Hata nedeni:
+CMakeLists.txt, mevcut olmayan firmware/controller/usb_descriptors.c dosyasini ariyordu.
+
+Duzeltme:
+Controller USB descriptor yolu firmware/common/usb_descriptors.c olarak degistirildi.
+
+Yapilacak:
+1. GitHub'da ana dizindeki CMakeLists.txt dosyasini ac.
+2. Kalem simgesine bas.
+3. Tum icerigi sil.
+4. Bu paketteki CMakeLists_V004_FIX1.txt dosyasinin icerigini yapistir.
+5. Commit changes yap.
+6. GitHub Actions otomatik yeniden baslayacak.
+
+Alternatif:
+Paketin tum normal dosyalarini yeniden Upload files ile yukleyebilirsin.

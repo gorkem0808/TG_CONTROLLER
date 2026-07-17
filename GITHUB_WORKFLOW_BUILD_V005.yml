@@ -1,0 +1,95 @@
+name: Build TG_CONTROLLER V005
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firmware:
+    name: Build 3 UF2 Files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+      - name: Download Pico SDK 2.2.0
+        run: |
+          git clone --depth 1 --branch 2.2.0 --recurse-submodules \
+            https://github.com/raspberrypi/pico-sdk.git "$RUNNER_TEMP/pico-sdk"
+          echo "PICO_SDK_PATH=$RUNNER_TEMP/pico-sdk" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DPICO_BOARD=pico -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --target TG_CONTROLLER TG_GUN_P1 TG_GUN_P2
+
+      - name: Prepare UF2 artifacts
+        run: |
+          mkdir -p artifact
+          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V005.uf2
+          cp build/TG_GUN_P1.uf2 artifact/TG_GUN_P1_V005.uf2
+          cp build/TG_GUN_P2.uf2 artifact/TG_GUN_P2_V005.uf2
+          sha256sum artifact/*.uf2 > artifact/SHA256SUMS.txt
+
+      - name: Verify expected files
+        run: |
+          test -s artifact/TG_CONTROLLER_V005.uf2
+          test -s artifact/TG_GUN_P1_V005.uf2
+          test -s artifact/TG_GUN_P2_V005.uf2
+
+      - name: Upload UF2 files
+        uses: actions/upload-artifact@v4
+        with:
+          name: TG_CONTROLLER_V005_ALL_UF2
+          path: artifact/
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows Manager
+    runs-on: windows-2025
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pyserial==3.5 pyinstaller==6.16.0
+
+      - name: Validate Python source
+        run: python -m py_compile desktop/app.py
+
+      - name: Build EXE
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V005 desktop/app.py
+
+      - name: Prepare Windows artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifact | Out-Null
+          Copy-Item dist/TG_CONTROLLER_MANAGER_V005.exe artifact/
+          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V005.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash *TG_CONTROLLER_MANAGER_V005.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
+
+      - name: Upload Windows manager
+        uses: actions/upload-artifact@v4
+        with:
+          name: TG_CONTROLLER_MANAGER_V005_WINDOWS
+          path: artifact/
+          if-no-files-found: error

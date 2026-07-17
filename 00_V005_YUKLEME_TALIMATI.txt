@@ -1,0 +1,13 @@
+TG_CONTROLLER V005 YUKLEME
+
+1. ZIP'i Extract All ile aç.
+2. Klasörün içindeki normal dosya ve klasörleri GitHub'a Upload files ile yükle.
+3. Commit changes yap.
+4. Windows .github klasörünü gizlerse:
+   - GitHub'daki .github/workflows/build.yml dosyasını aç.
+   - Paketteki GITHUB_WORKFLOW_BUILD_V005.yml içeriğiyle değiştir.
+5. İlk satır kesinlikle:
+   name: Build TG_CONTROLLER V005
+6. Actions sonucunda iki yeşil iş beklenir:
+   - Build 3 UF2 Files
+   - Build Windows Manager
