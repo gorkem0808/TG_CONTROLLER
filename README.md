@@ -1,31 +1,30 @@
-# TG_CONTROLLER V001
+# TG_CONTROLLER V002
 
-Raspberry Pi Pico tabanlı arcade controller firmware.
+Raspberry Pi Pico tabanlı arcade controller ve Windows yönetim programı.
 
-## Sabit pinler
+## Pinler
 
-| GP | Görev | USB tuşu |
-|---:|---|---|
+| GP | Görev | HID |
+|---|---|---|
 | GP2 | Coin | 1 |
-| GP3 | Player 1 Start | 2 |
-| GP4 | Player 1 Tetik | 3 |
-| GP5 | Player 1 Bomba | 4 |
-| GP6 | Player 2 Start | 5 |
-| GP7 | Player 2 Tetik | 6 |
-| GP8 | Player 2 Bomba | 7 |
-| GP27 | Player 1 Röle | P1 tetikle birlikte |
-| GP26 | Player 2 Röle | P2 tetikle birlikte |
+| GP3 | P1 Start | 2 |
+| GP4 | P1 Tetik | 3 |
+| GP5 | P1 Bomba | 4 |
+| GP6 | P2 Start | 5 |
+| GP7 | P2 Tetik | 6 |
+| GP8 | P2 Bomba | 7 |
+| GP27 | P1 Röle | — |
+| GP26 | P2 Röle | — |
 
-Girişler dahili pull-up kullanır. Her buton ilgili GP pini ile GND arasına bağlanır.
+## V002 yenilikleri
 
-## V001 kapsamı
+- USB CDC üzerinden cihaz tanıma
+- Canlı buton ve röle durum paketleri
+- Windows yönetim programı
+- Röle 1 ve Röle 2 için güvenli 250 ms test darbesi
+- GitHub Actions ile UF2 ve Windows EXE üretimi
 
-- USB HID klavye
-- USB CDC seri bağlantı
-- 20 ms buton debounce
-- P1/P2 röle kontrolü
-- GitHub Actions ile otomatik UF2 üretimi
+## GitHub çıktıları
 
-## GitHub
-
-`Actions → Build TG_CONTROLLER UF2` çalışması tamamlandığında `TG_CONTROLLER_V001_UF2` adlı artifact oluşur.
+- `TG_CONTROLLER_V002.uf2`
+- `TG_CONTROLLER_MANAGER_V002.exe`
