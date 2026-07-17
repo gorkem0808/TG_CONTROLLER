@@ -1,4 +1,4 @@
-name: Build TG_CONTROLLER V002
+name: Build TG_CONTROLLER V003
 
 on:
   push:
@@ -38,13 +38,13 @@ jobs:
       - name: Prepare UF2 artifact
         run: |
           mkdir -p artifact
-          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V002.uf2
-          sha256sum artifact/TG_CONTROLLER_V002.uf2 > artifact/SHA256SUMS.txt
+          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V003.uf2
+          sha256sum artifact/TG_CONTROLLER_V003.uf2 > artifact/SHA256SUMS.txt
 
       - name: Upload UF2
         uses: actions/upload-artifact@v4
         with:
-          name: TG_CONTROLLER_V002_UF2
+          name: TG_CONTROLLER_V003_UF2
           path: artifact/
           if-no-files-found: error
 
@@ -69,19 +69,19 @@ jobs:
         run: python -m py_compile desktop/app.py
 
       - name: Build EXE
-        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V002 desktop/app.py
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V003 desktop/app.py
 
       - name: Create checksum
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
-          Copy-Item dist/TG_CONTROLLER_MANAGER_V002.exe artifact/
-          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V002.exe -Algorithm SHA256).Hash.ToLower()
-          "$hash *TG_CONTROLLER_MANAGER_V002.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
+          Copy-Item dist/TG_CONTROLLER_MANAGER_V003.exe artifact/
+          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V003.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash *TG_CONTROLLER_MANAGER_V003.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
 
       - name: Upload Windows manager
         uses: actions/upload-artifact@v4
         with:
-          name: TG_CONTROLLER_MANAGER_V002_WINDOWS
+          name: TG_CONTROLLER_MANAGER_V003_WINDOWS
           path: artifact/
           if-no-files-found: error
