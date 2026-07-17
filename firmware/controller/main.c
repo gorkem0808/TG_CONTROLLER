@@ -157,9 +157,9 @@ static void send_status(void) {
 
 static void process_command(const char *command, uint32_t now_ms) {
     if (strcmp(command, "PING") == 0) {
-        cdc_write_line("PONG TG_CONTROLLER V002");
+        cdc_write_line("PONG TG_CONTROLLER V003");
     } else if (strcmp(command, "INFO") == 0) {
-        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=0.2.0 BOARD=RP2040");
+        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=0.3.0 BOARD=RP2040");
     } else if (strcmp(command, "STATUS") == 0) {
         send_status();
     } else if (strcmp(command, "RELAY 1 PULSE") == 0) {
