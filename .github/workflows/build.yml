@@ -1,4 +1,4 @@
-name: Build TG_CONTROLLER V004
+name: Build TG_CONTROLLER V005
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   firmware:
-    name: Build UF2 Files
+    name: Build 3 UF2 Files
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -33,19 +33,26 @@ jobs:
         run: cmake -S . -B build -G Ninja -DPICO_BOARD=pico -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --target TG_CONTROLLER TG_GUN_P1
+        run: cmake --build build --target TG_CONTROLLER TG_GUN_P1 TG_GUN_P2
 
-      - name: Prepare artifacts
+      - name: Prepare UF2 artifacts
         run: |
           mkdir -p artifact
-          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V004.uf2
-          cp build/TG_GUN_P1.uf2 artifact/TG_GUN_P1_V004.uf2
+          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_V005.uf2
+          cp build/TG_GUN_P1.uf2 artifact/TG_GUN_P1_V005.uf2
+          cp build/TG_GUN_P2.uf2 artifact/TG_GUN_P2_V005.uf2
           sha256sum artifact/*.uf2 > artifact/SHA256SUMS.txt
+
+      - name: Verify expected files
+        run: |
+          test -s artifact/TG_CONTROLLER_V005.uf2
+          test -s artifact/TG_GUN_P1_V005.uf2
+          test -s artifact/TG_GUN_P2_V005.uf2
 
       - name: Upload UF2 files
         uses: actions/upload-artifact@v4
         with:
-          name: TG_CONTROLLER_V004_UF2
+          name: TG_CONTROLLER_V005_ALL_UF2
           path: artifact/
           if-no-files-found: error
 
@@ -70,19 +77,19 @@ jobs:
         run: python -m py_compile desktop/app.py
 
       - name: Build EXE
-        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V004 desktop/app.py
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name TG_CONTROLLER_MANAGER_V005 desktop/app.py
 
-      - name: Create checksum
+      - name: Prepare Windows artifact
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
-          Copy-Item dist/TG_CONTROLLER_MANAGER_V004.exe artifact/
-          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V004.exe -Algorithm SHA256).Hash.ToLower()
-          "$hash *TG_CONTROLLER_MANAGER_V004.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
+          Copy-Item dist/TG_CONTROLLER_MANAGER_V005.exe artifact/
+          $hash = (Get-FileHash artifact/TG_CONTROLLER_MANAGER_V005.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash *TG_CONTROLLER_MANAGER_V005.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
 
       - name: Upload Windows manager
         uses: actions/upload-artifact@v4
         with:
-          name: TG_CONTROLLER_MANAGER_V004_WINDOWS
+          name: TG_CONTROLLER_MANAGER_V005_WINDOWS
           path: artifact/
           if-no-files-found: error
