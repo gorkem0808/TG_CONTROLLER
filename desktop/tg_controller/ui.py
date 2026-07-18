@@ -376,49 +376,64 @@ class ManagerApp:
         self._button(toolbar, "Testi Durdur", self.stop_live_test, 14).pack(side="left", padx=4)
         tk.Label(toolbar, text="Bu test silah HID mouse'unu açmadan seri X/Y ile iki nişangâhı gösterir.",
                  bg=BG, fg=MUTED).pack(side="left", padx=16)
+
+        relay_panel = self._panel(
+            self.test_tab,
+            "Röle Testi — 5 saniye sonra otomatik kapanır",
+        )
+        relay_panel.pack(fill="x", pady=(0, 8))
+        relay_buttons = tk.Frame(relay_panel, bg=PANEL)
+        relay_buttons.pack(fill="x", padx=12, pady=(0, 12))
+
+        self._button(
+            relay_buttons,
+            "Röle 1 Test",
+            lambda: self.send("controller", "RELAY TEST 1 ON", warn=True),
+            14,
+        ).pack(side="left", padx=4)
+        self._button(
+            relay_buttons,
+            "Röle 2 Test",
+            lambda: self.send("controller", "RELAY TEST 2 ON", warn=True),
+            14,
+        ).pack(side="left", padx=4)
+        self._button(
+            relay_buttons,
+            "Tüm Röleleri Kapat",
+            lambda: self.send("controller", "RELAY TEST ALL OFF", warn=True),
+            18,
+        ).pack(side="left", padx=4)
+        tk.Label(
+            relay_buttons,
+            text="Test sırasında normal tetik-röle çıkışı devre dışıdır.",
+            bg=PANEL,
+            fg=MUTED,
+        ).pack(side="left", padx=14)
+
         self.test_canvas = tk.Canvas(self.test_tab, bg="black", highlightthickness=1, highlightbackground=PANEL2)
         self.test_canvas.pack(fill="both", expand=True)
 
     def _build_macro_tab(self) -> None:
-        panel = self._panel(self.macro_tab, "Paradise Lost Başlatma")
+        panel = self._panel(self.macro_tab, "Sabit Makro Zamanlaması")
         panel.pack(fill="x", pady=4)
-        form = tk.Frame(panel, bg=PANEL)
-        form.pack(fill="x", padx=14, pady=(0, 12))
-        self.game_path_var = tk.StringVar(value=self.config.game_path)
-        self.game_args_var = tk.StringVar(value=self.config.game_arguments)
-        self.workdir_var = tk.StringVar(value=self.config.working_directory)
+
         self.macro_delay_var = tk.IntVar(value=self.config.macro_delay_seconds)
         self.macro_enabled_var = tk.BooleanVar(value=True)
-        self.auto_start_var = tk.BooleanVar(value=self.config.auto_start_game)
-        self.auto_restart_var = tk.BooleanVar(value=self.config.auto_restart_game)
+        self.auto_start_var = tk.BooleanVar(value=False)
+        self.auto_restart_var = tk.BooleanVar(value=False)
         self.require_devices_var = tk.BooleanVar(value=self.config.require_all_devices)
         self.autostart_var = tk.BooleanVar(value=is_autostart_enabled())
 
-        labels = ("Oyun EXE", "Ek argümanlar", "Çalışma klasörü")
-        variables = (self.game_path_var, self.game_args_var, self.workdir_var)
-        for row, (label, variable) in enumerate(zip(labels, variables)):
-            tk.Label(form, text=label, bg=PANEL, fg=MUTED).grid(
-                row=row, column=0, sticky="w", padx=4, pady=5
-            )
-            tk.Entry(
-                form,
-                textvariable=variable,
-                bg=PANEL2,
-                fg=TEXT,
-                insertbackground=TEXT,
-                width=85,
-            ).grid(row=row, column=1, sticky="ew", padx=6, pady=5)
-        self._button(form, "Seç", self.choose_game, 8).grid(row=0, column=2, padx=4)
-        form.grid_columnconfigure(1, weight=1)
-
         options = tk.Frame(panel, bg=PANEL)
         options.pack(fill="x", padx=14, pady=(0, 12))
+
         tk.Label(
             options,
-            text="Oyun açılış bekleme (0–999 sn):",
+            text="Makro bekleme süresi (0–999 sn):",
             bg=PANEL,
             fg=MUTED,
         ).pack(side="left")
+
         tk.Spinbox(
             options,
             from_=0,
@@ -430,8 +445,6 @@ class ManagerApp:
         ).pack(side="left", padx=6)
 
         for text, variable in (
-            ("Windows açılınca oyun", self.auto_start_var),
-            ("Oyun kapanırsa tekrar aç", self.auto_restart_var),
             ("3 Pico bağlı olsun", self.require_devices_var),
             ("Program Windows ile başlasın", self.autostart_var),
         ):
@@ -444,12 +457,9 @@ class ManagerApp:
                 selectcolor=PANEL2,
                 activebackground=PANEL,
                 activeforeground=TEXT,
-            ).pack(side="left", padx=7)
+            ).pack(side="left", padx=10)
 
-        fixed = self._panel(
-            self.macro_tab,
-            "Sabit Operatör Makrosu — Değiştirilemez",
-        )
+        fixed = self._panel(self.macro_tab, "Sabit Rakam Makrosu — Değiştirilemez")
         fixed.pack(fill="both", expand=True, pady=8)
 
         tk.Label(
@@ -466,11 +476,12 @@ class ManagerApp:
             fixed,
             text=(
                 "3 = KLAVYE 3    •    4 = KLAVYE 4    •    5 = KLAVYE 5\n"
-                "Fiziksel tuş eşlemesi: GP4=3, GP5=4, GP6=5. "
-                "Bilgisayar/oyun açılışında belirlenen süre bitene kadar "
-                "GP3–GP8 oyun butonları ve titreşim röleleri kilitlidir. "
-                "Makro bitince sistem kredi bekler. GP2 ile kredi atıldığında "
-                "butonlar kullanılabilir olur. GP9 makroyu süre beklemeden başlatır."
+                "Fiziksel eşleştirme: GP4=3, GP5=4, GP6=5.\n\n"
+                "Paradise Lost başlatma bölümü tamamen kaldırıldı. "
+                "Program TeknoParrot veya oyunu açmaz. "
+                "TG Controller yalnız bekleme süresi, sabit makro, kredi "
+                "ve silah buton kilidini yönetir. "
+                "GP9 makroyu süre beklemeden hemen çalıştırır."
             ),
             bg=PANEL,
             fg=MUTED,
@@ -481,30 +492,11 @@ class ManagerApp:
 
         buttons = tk.Frame(fixed, bg=PANEL)
         buttons.pack(fill="x", padx=12, pady=(0, 12))
-        self._button(
-            buttons,
-            "Ayarları Kaydet",
-            self.save_game_settings,
-            16,
-        ).pack(side="left", padx=4)
-        self._button(
-            buttons,
-            "Oyunu Başlat",
-            self.launch_game,
-            14,
-        ).pack(side="left", padx=4)
-        self._button(
-            buttons,
-            "Makroyu Şimdi Çalıştır",
-            self.run_macro_now,
-            22,
-        ).pack(side="left", padx=4)
-        self._button(
-            buttons,
-            "Sayaç/Makro İptal",
-            self.cancel_macro,
-            18,
-        ).pack(side="left", padx=4)
+
+        self._button(buttons, "Ayarları Kaydet", self.save_game_settings, 16).pack(side="left", padx=4)
+        self._button(buttons, "Makroyu Şimdi Çalıştır", self.run_macro_now, 22).pack(side="left", padx=4)
+        self._button(buttons, "Sayaç/Makro İptal", self.cancel_macro, 18).pack(side="left", padx=4)
+
         tk.Label(
             buttons,
             textvariable=self.macro_status_var,
@@ -660,6 +652,10 @@ class ManagerApp:
             self.button_gate_var.set(gate_text.get(gate, "BİLİNMİYOR"))
             for key in self.controller_buttons:
                 self.controller_buttons[key].set("AKTİF" if values.get(key) == "1" else "PASİF")
+            if values.get("RTEST1") == "1":
+                self.controller_buttons["R1"].set("TEST AKTİF")
+            if values.get("RTEST2") == "1":
+                self.controller_buttons["R2"].set("TEST AKTİF")
 
             s1_edge = values.get("S1") == "1" and self.last_controller.get("S1") != "1"
             s2_edge = values.get("S2") == "1" and self.last_controller.get("S2") != "1"
@@ -747,6 +743,12 @@ class ManagerApp:
             )
         elif line.startswith("EVENT BUTTONS ARMED"):
             self.button_gate_var.set("KULLANILABİLİR")
+        elif line.startswith("EVENT RELAY TEST R1 ON"):
+            self._log("Röle 1 test başladı — 5 saniye sonra otomatik kapanır.")
+        elif line.startswith("EVENT RELAY TEST R2 ON"):
+            self._log("Röle 2 test başladı — 5 saniye sonra otomatik kapanır.")
+        elif line.startswith("EVENT RELAY TEST"):
+            self._log("Röle testi kapatıldı.")
         elif line.startswith("EVENT COIN BLOCKED"):
             self.button_gate_var.set(
                 "KİLİTLİ — ÖNCE SABİT MAKRO TAMAMLANMALI"
@@ -994,13 +996,10 @@ class ManagerApp:
         save_config(self.config)
 
     def choose_game(self) -> None:
-        path = filedialog.askopenfilename(
-            title="Paradise Lost Farcry_R.exe dosyasını seç",
-            filetypes=(("Windows uygulaması", "*.exe"), ("Tüm dosyalar", "*.*")),
+        messagebox.showinfo(
+            APP_TITLE,
+            "Oyun yolu seçme ve Paradise Lost başlatma bölümü kaldırıldı.",
         )
-        if path:
-            self.game_path_var.set(path)
-            self.workdir_var.set(str(Path(path).parent))
 
     def save_game_settings(self, show_message: bool = True) -> bool:
         try:
@@ -1009,14 +1008,14 @@ class ManagerApp:
             messagebox.showerror(APP_TITLE, f"Bekleme süresi hatası: {exc}")
             return False
 
-        self.config.game_path = self.game_path_var.get().strip()
-        self.config.game_arguments = self.game_args_var.get().strip()
-        self.config.working_directory = self.workdir_var.get().strip()
+        self.config.game_path = ""
+        self.config.game_arguments = ""
+        self.config.working_directory = ""
+        self.config.auto_start_game = False
+        self.config.auto_restart_game = False
         self.config.macro_delay_seconds = delay
         self.config.macro_enabled = True
         self.config.macro_steps = fixed_macro_steps()
-        self.config.auto_start_game = bool(self.auto_start_var.get())
-        self.config.auto_restart_game = bool(self.auto_restart_var.get())
         self.config.require_all_devices = bool(self.require_devices_var.get())
         self.config.windows_autostart = bool(self.autostart_var.get())
         save_config(self.config)
@@ -1024,17 +1023,11 @@ class ManagerApp:
         try:
             set_autostart(self.config.windows_autostart)
         except OSError as exc:
-            messagebox.showerror(
-                APP_TITLE,
-                f"Windows başlangıç ayarı yazılamadı: {exc}",
-            )
+            messagebox.showerror(APP_TITLE, f"Windows başlangıç ayarı yazılamadı: {exc}")
             return False
 
         if show_message:
-            messagebox.showinfo(
-                APP_TITLE,
-                "Oyun, başlangıç ve sabit makro bekleme ayarları kaydedildi.",
-            )
+            messagebox.showinfo(APP_TITLE, "Makro bekleme ve program başlangıç ayarları kaydedildi.")
         return True
 
     def upload_macro(self) -> None:
@@ -1042,19 +1035,18 @@ class ManagerApp:
             APP_TITLE,
             "Makro firmware içinde sabittir ve değiştirilemez.\n"
             f"{FIXED_MACRO_DIGITS}\n"
-            "GP4=3, GP5=4, GP6=5 — makro da yalnız 3/4/5 rakamlarını yazar",
+            "GP4=3, GP5=4, GP6=5",
         )
 
     def insert_example_macro(self) -> None:
         self.upload_macro()
 
     def launch_game(self) -> None:
-        if not self.save_game_settings(show_message=False):
-            return
-        if self.config.require_all_devices and not self.device_manager.all_required_connected():
-            messagebox.showwarning(APP_TITLE, "Controller, P1 ve P2 bağlı olmadan oyun başlatılmadı.")
-            return
-        self.game_manager.launch(self.config, lambda: self.send("controller", "MACRO START"))
+        messagebox.showinfo(
+            APP_TITLE,
+            "Paradise Lost başlatma özelliği kaldırıldı.\n"
+            "Oyun mevcut otomatik başlatma sistemiyle açılmalıdır.",
+        )
 
     def run_macro_now(self) -> None:
         self.game_manager.cancel_countdown_for_manual_macro()

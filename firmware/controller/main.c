@@ -30,6 +30,7 @@
 #define KEY_PULSE_MS_DEFAULT 90u
 #define CALIBRATION_HOLD_MS 10000u
 #define MAINTENANCE_TIMEOUT_MS 180000u
+#define RELAY_TEST_TIMEOUT_MS 5000u
 #define MAX_CREDITS 99u
 #define RX_LINE_MAX 160u
 #define MACRO_MAX_STEPS 32u
@@ -115,6 +116,9 @@ static uint8_t credits = 0u;
 static access_state_t access_state = ACCESS_WAIT_MACRO;
 static bool gameplay_armed = false;
 static bool relay_awake = false;
+static bool relay_test_1 = false;
+static bool relay_test_2 = false;
+static uint32_t relay_test_deadline_ms = 0u;
 static uint32_t last_activity_ms = 0u;
 static bool calibration_chord_latched = false;
 static bool start_pair_seen = false;
@@ -258,6 +262,38 @@ static void all_relays_off(void) {
     set_relay(PIN_RELAY_2, false);
 }
 
+static void relay_test_stop(const char *message) {
+    relay_test_1 = false;
+    relay_test_2 = false;
+    relay_test_deadline_ms = 0u;
+    all_relays_off();
+    if (message != NULL) {
+        cdc_write_line(message);
+    }
+}
+
+static void relay_test_start(uint8_t relay_number, uint32_t now_ms) {
+    relay_test_1 = relay_number == 1u;
+    relay_test_2 = relay_number == 2u;
+    relay_test_deadline_ms = now_ms + RELAY_TEST_TIMEOUT_MS;
+    relay_awake = false;
+    gameplay_armed = false;
+    set_relay(PIN_RELAY_1, relay_test_1);
+    set_relay(PIN_RELAY_2, relay_test_2);
+    cdc_write_line(
+        relay_number == 1u
+            ? "EVENT RELAY TEST R1 ON"
+            : "EVENT RELAY TEST R2 ON"
+    );
+}
+
+static void relay_test_task(uint32_t now_ms) {
+    if ((relay_test_1 || relay_test_2) &&
+        deadline_reached(now_ms, relay_test_deadline_ms)) {
+        relay_test_stop("EVENT RELAY TEST AUTO_OFF");
+    }
+}
+
 static bool all_gameplay_buttons_released(void) {
     for (size_t index = BTN_P1_START; index <= BTN_P2_BOMB; ++index) {
         if (buttons[index].stable) {
@@ -282,7 +318,9 @@ static bool gameplay_outputs_enabled(void) {
     return access_state == ACCESS_READY &&
            gameplay_armed &&
            !maintenance_mode &&
-           !macro_running;
+           !macro_running &&
+           !relay_test_1 &&
+           !relay_test_2;
 }
 
 static uint8_t fixed_macro_keycode(char token) {
@@ -565,17 +603,23 @@ static void scan_buttons(uint32_t now_ms) {
     update_gameplay_arming();
     update_maintenance_timeout(now_ms);
     update_relay_idle(now_ms);
+    relay_test_task(now_ms);
 
-    const bool relay1_active =
-        gameplay_outputs_enabled() &&
-        relay_awake &&
-        buttons[BTN_P1_TRIGGER].stable;
-    const bool relay2_active =
-        gameplay_outputs_enabled() &&
-        relay_awake &&
-        buttons[BTN_P2_TRIGGER].stable;
-    set_relay(PIN_RELAY_1, relay1_active);
-    set_relay(PIN_RELAY_2, relay2_active);
+    if (relay_test_1 || relay_test_2) {
+        set_relay(PIN_RELAY_1, relay_test_1);
+        set_relay(PIN_RELAY_2, relay_test_2);
+    } else {
+        const bool relay1_active =
+            gameplay_outputs_enabled() &&
+            relay_awake &&
+            buttons[BTN_P1_TRIGGER].stable;
+        const bool relay2_active =
+            gameplay_outputs_enabled() &&
+            relay_awake &&
+            buttons[BTN_P2_TRIGGER].stable;
+        set_relay(PIN_RELAY_1, relay1_active);
+        set_relay(PIN_RELAY_2, relay2_active);
+    }
 
     for (size_t index = 0u; index < BTN_COUNT; ++index) {
         buttons[index].previous = buttons[index].stable;
@@ -642,7 +686,7 @@ static void send_status(void) {
         "STATUS C=%u S1=%u T1=%u B1=%u S2=%u T2=%u B2=%u M9=%u "
         "R1=%u R2=%u CREDIT=%u CALREQ=%u MAINT=%u MACRO=%u "
         "MACROSTEP=%u MACROTOTAL=%u RELAYAWAKE=%u RELAYLOW=%u IDLE=%u "
-        "GATE=%u BUTTONS=%u ARMED=%u",
+        "GATE=%u BUTTONS=%u ARMED=%u RTEST1=%u RTEST2=%u",
         buttons[BTN_COIN].stable ? 1u : 0u,
         buttons[BTN_P1_START].stable ? 1u : 0u,
         buttons[BTN_P1_TRIGGER].stable ? 1u : 0u,
@@ -668,7 +712,9 @@ static void send_status(void) {
         (unsigned)settings.inactivity_s,
         (unsigned)access_state,
         gameplay_outputs_enabled() ? 1u : 0u,
-        gameplay_armed ? 1u : 0u
+        gameplay_armed ? 1u : 0u,
+        relay_test_1 ? 1u : 0u,
+        relay_test_2 ? 1u : 0u
     );
     cdc_write_line(line);
 }
@@ -691,9 +737,9 @@ static void process_command(const char *command, uint32_t now_ms) {
     unsigned a = 0u;
 
     if (strcmp(command, "PING") == 0) {
-        cdc_write_line("PONG TG_CONTROLLER_PRO V4.4.0");
+        cdc_write_line("PONG TG_CONTROLLER_PRO V4.6.0");
     } else if (strcmp(command, "INFO") == 0) {
-        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=4.4.0 BOARD=RP2040 MACRO=FIXED_NUMBERS GP9=MANUAL");
+        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=4.6.0 BOARD=RP2040 MACRO=FIXED_NUMBERS GP9=MANUAL RELAYTEST=1");
     } else if (strcmp(command, "STATUS") == 0) {
         send_status();
     } else if (strcmp(command, "CONFIG") == 0) {
@@ -719,8 +765,19 @@ static void process_command(const char *command, uint32_t now_ms) {
         wake_relays_from_coin(now_ms);
     } else if (strcmp(command, "RELAY SLEEP") == 0) {
         relay_awake = false;
+        relay_test_stop(NULL);
         all_relays_off();
         cdc_write_line("OK RELAY SLEEP");
+    } else if (strcmp(command, "RELAY TEST 1 ON") == 0) {
+        relay_test_start(1u, now_ms);
+    } else if (strcmp(command, "RELAY TEST 1 OFF") == 0) {
+        relay_test_stop("EVENT RELAY TEST R1 OFF");
+    } else if (strcmp(command, "RELAY TEST 2 ON") == 0) {
+        relay_test_start(2u, now_ms);
+    } else if (strcmp(command, "RELAY TEST 2 OFF") == 0) {
+        relay_test_stop("EVENT RELAY TEST R2 OFF");
+    } else if (strcmp(command, "RELAY TEST ALL OFF") == 0) {
+        relay_test_stop("EVENT RELAY TEST ALL OFF");
     } else if (sscanf(command, "SET RELAY_ACTIVE_LOW %u", &a) == 1) {
         settings.relay_active_low = a ? 1u : 0u;
         all_relays_off();

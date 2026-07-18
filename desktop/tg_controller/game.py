@@ -133,84 +133,14 @@ class GameManager:
         cfg: AppConfig,
         send_macro: Callable[[], bool],
     ) -> bool:
+        """Game launching was intentionally removed in V4.5."""
         self.config = cfg
         self.send_macro = send_macro
-
-        path = Path(cfg.game_path)
-        if not path.exists():
-            self.callback(
-                {
-                    "type": "game_error",
-                    "message": f"Oyun bulunamadı: {path}",
-                }
-            )
-            return False
-
-        if self.is_game_running(str(path)):
-            self.callback(
-                {
-                    "type": "game_already_running",
-                    "path": str(path),
-                }
-            )
-            if cfg.macro_enabled:
-                self.start_countdown(
-                    cfg.macro_delay_seconds,
-                    send_macro,
-                )
-            return False
-
-        args = [str(path)]
-        if cfg.game_arguments.strip():
-            args.extend(
-                shlex.split(
-                    cfg.game_arguments,
-                    posix=False,
-                )
-            )
-
-        working_directory = (
-            cfg.working_directory
-            or str(path.parent)
-        )
-
-        try:
-            self.process = subprocess.Popen(
-                args,
-                cwd=working_directory,
-            )
-        except OSError as exc:
-            self.callback(
-                {
-                    "type": "game_error",
-                    "message": str(exc),
-                }
-            )
-            return False
-
-        self.countdown_cancel_event.clear()
-        self.stop_requested_event.clear()
-
-        self.callback(
-            {
-                "type": "game_started",
-                "pid": self.process.pid,
-            }
-        )
-
-        self.monitor_thread = threading.Thread(
-            target=self._monitor,
-            daemon=True,
-        )
-        self.monitor_thread.start()
-
-        if cfg.macro_enabled:
-            self.start_countdown(
-                cfg.macro_delay_seconds,
-                send_macro,
-            )
-
-        return True
+        self.callback({
+            "type": "game_error",
+            "message": "Paradise Lost başlatma özelliği kaldırıldı.",
+        })
+        return False
 
     def start_countdown(
         self,

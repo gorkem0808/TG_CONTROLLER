@@ -60,7 +60,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertNotIn("import psutil", game_text)
         self.assertNotIn("psutil==", requirements)
         self.assertIn("--self-test", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_4.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_6.exe", workflow)
 
 
     def test_tray_hotfix_contract(self) -> None:
@@ -73,7 +73,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("signal_show_request", single)
         self.assertIn("consume_show_request", single)
         self.assertIn("pystray._win32", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_4.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_6.exe", workflow)
 
 
     def test_fixed_macro_gate_and_gp9_contract(self) -> None:
@@ -116,6 +116,31 @@ class ProjectContractTests(unittest.TestCase):
             macro,
         )
         self.assertIn("GP4=3, GP5=4, GP6=5", ui)
+
+
+    def test_paradise_lost_launcher_removed(self) -> None:
+        ui = (ROOT / "desktop/tg_controller/ui.py").read_text(encoding="utf-8")
+        config = (ROOT / "desktop/tg_controller/config.py").read_text(encoding="utf-8")
+        game = (ROOT / "desktop/tg_controller/game.py").read_text(encoding="utf-8")
+        self.assertNotIn('"Oyunu Başlat"', ui)
+        self.assertNotIn('"Oyun EXE"', ui)
+        self.assertNotIn('"Ek argümanlar"', ui)
+        self.assertNotIn('"Çalışma klasörü"', ui)
+        self.assertIn("Paradise Lost başlatma bölümü tamamen kaldırıldı", ui)
+        self.assertIn('self.game_path = ""', config)
+        self.assertIn("Game launching was intentionally removed", game)
+
+
+    def test_relay_test_contract(self) -> None:
+        controller = (ROOT / "firmware/controller/main.c").read_text(encoding="utf-8")
+        ui = (ROOT / "desktop/tg_controller/ui.py").read_text(encoding="utf-8")
+        self.assertIn("RELAY TEST 1 ON", controller)
+        self.assertIn("RELAY TEST 2 ON", controller)
+        self.assertIn("RELAY TEST ALL OFF", controller)
+        self.assertIn("RELAY_TEST_TIMEOUT_MS 5000u", controller)
+        self.assertIn('"Röle 1 Test"', ui)
+        self.assertIn('"Röle 2 Test"', ui)
+        self.assertIn('"Tüm Röleleri Kapat"', ui)
 
 
 if __name__ == "__main__":

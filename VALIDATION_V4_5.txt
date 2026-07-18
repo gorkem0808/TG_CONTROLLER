@@ -1,0 +1,15 @@
+TG_CONTROLLER_PRO V4.5 DOĞRULAMA
+
+Python derleme testi: OK
+Unit testler: OK
+Oyun EXE alanı: KALDIRILDI
+Ek argümanlar alanı: KALDIRILDI
+Çalışma klasörü alanı: KALDIRILDI
+Oyunu Başlat düğmesi: KALDIRILDI
+Otomatik oyun başlatma: DEVRE DIŞI
+Oyun yeniden başlatma: DEVRE DIŞI
+Sabit makro: KORUNDU
+GP9 anında makro: KORUNDU
+GP2 kredi sonrası silah açma: KORUNDU
+Controller firmware değişikliği: YOK
+V4.4 UF2 tekrar yükleme: GEREKMİYOR

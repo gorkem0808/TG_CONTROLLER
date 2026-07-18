@@ -1,0 +1,15 @@
+TG_CONTROLLER_PRO V4.6 DOĞRULAMA
+
+Python derleme testi: OK
+Unit testler: OK
+Röle 1 Test: EKLENDİ
+Röle 2 Test: EKLENDİ
+Tüm Röleleri Kapat: EKLENDİ
+5 saniye otomatik kapanma: EKLENDİ
+Test sırasında normal tetik-röle çıkışı: DEVRE DIŞI
+Paradise Lost başlatma bölümü: KALDIRILMIŞ OLARAK KORUNDU
+Sabit makro / GP9 / GP2 kredi kilidi: KORUNDU
+
+Controller firmware değişikliği: VAR
+Controller Pico V4.6 UF2 yükleme: ZORUNLU
+P1/P2 Gun firmware değişikliği: YOK

@@ -22,7 +22,7 @@ def config_dir() -> Path:
 
 @dataclass
 class AppConfig:
-    schema: int = 6
+    schema: int = 7
     game_path: str = DEFAULT_GAME_PATH
     game_arguments: str = ""
     working_directory: str = r"C:\ArcadeGames\paradiselost"
@@ -42,9 +42,14 @@ class AppConfig:
     p2_smoothing: int = 4
 
     def normalize(self) -> None:
-        self.schema = 6
+        self.schema = 7
         self.macro_enabled = True
         self.macro_steps = fixed_macro_steps()
+        self.game_path = ""
+        self.game_arguments = ""
+        self.working_directory = ""
+        self.auto_start_game = False
+        self.auto_restart_game = False
         self.macro_delay_seconds = max(0, min(999, int(self.macro_delay_seconds)))
         self.restart_delay_seconds = max(1, min(999, int(self.restart_delay_seconds)))
         self.relay_inactivity_seconds = max(0, min(3600, int(self.relay_inactivity_seconds)))

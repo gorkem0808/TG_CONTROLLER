@@ -1,22 +1,7 @@
-TG_CONTROLLER_PRO V4.4 — RAKAM MAKROSU
+TG_CONTROLLER_PRO V4.6
 
-1. ZIP içeriğini GitHub deposuna yükleyin.
-2. .github görünmezse WORKFLOW_KOPYASI_BUILD_PRO_V4_4.yml içeriğini
-   .github/workflows/build.yml dosyasına yapıştırın.
-3. Actions → Build TG_CONTROLLER_PRO V4.4 NUMBER MACRO çalışsın.
-4. Şu artifact'leri indirin:
-   - TG_CONTROLLER_PRO_V4_4_ALL_UF2
-   - TG_CONTROLLER_PRO_MANAGER_V4_4_WINDOWS
-5. Controller Pico'ya TG_CONTROLLER_PRO_CONTROLLER_V4_4.uf2 yükleyin.
-6. Manager olarak TG_CONTROLLER_PRO_MANAGER_V4_4.exe kullanın.
+GitHub Actions: Build TG_CONTROLLER_PRO V4.6 RELAY TEST
+Controller UF2: TG_CONTROLLER_PRO_CONTROLLER_V4_6.uf2
+Manager: TG_CONTROLLER_PRO_MANAGER_V4_6.exe
 
-KESİN EŞLEŞTİRME
-GP4 = klavye 3
-GP5 = klavye 4
-GP6 = klavye 5
-
-SABİT MAKRO
-345455535455535455335555555544
-
-Makro yalnız klavye 3, 4 ve 5 rakamlarını gönderir.
-F1, F2 ve Aşağı kullanılmaz.
+Controller Pico'ya V4.6 UF2 yüklemek zorunludur.
