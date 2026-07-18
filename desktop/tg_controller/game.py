@@ -288,6 +288,10 @@ class GameManager:
     def cancel_countdown(self) -> None:
         self.countdown_cancel_event.set()
 
+    def cancel_countdown_for_manual_macro(self) -> None:
+        """Cancel the automatic timer when GP9/GP2 starts the fixed macro."""
+        self.countdown_cancel_event.set()
+
     def stop_game(self) -> None:
         self.countdown_cancel_event.set()
         self.stop_requested_event.set()

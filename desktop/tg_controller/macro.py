@@ -8,6 +8,12 @@ class MacroValidationError(ValueError):
     pass
 
 
+FIXED_MACRO_DIGITS = "345455535455535455335555555544"
+FIXED_DIGIT_TO_KEY = {"3": "F1", "4": "F2", "5": "DOWN"}
+FIXED_MACRO_HOLD_MS = 100
+FIXED_MACRO_WAIT_MS = 300
+
+
 KEYCODES: dict[str, int] = {
     "A": 0x04, "B": 0x05, "C": 0x06, "D": 0x07, "E": 0x08,
     "F": 0x09, "G": 0x0A, "H": 0x0B, "I": 0x0C, "J": 0x0D,
@@ -97,8 +103,17 @@ def compile_macro(raw: Any) -> list[CompiledStep]:
     return compiled
 
 
-def example_macro() -> list[dict[str, Any]]:
+def fixed_macro_steps() -> list[dict[str, Any]]:
     return [
-        {"type": "key", "key": "F1", "hold_ms": 100, "wait_ms": 900},
-        {"type": "key", "key": "F2", "hold_ms": 100, "wait_ms": 900},
+        {
+            "type": "key",
+            "key": FIXED_DIGIT_TO_KEY[digit],
+            "hold_ms": FIXED_MACRO_HOLD_MS,
+            "wait_ms": FIXED_MACRO_WAIT_MS,
+        }
+        for digit in FIXED_MACRO_DIGITS
     ]
+
+
+def example_macro() -> list[dict[str, Any]]:
+    return fixed_macro_steps()

@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from tg_controller.macro import MacroValidationError, compile_macro, validate_macro
+from tg_controller.macro import (
+    FIXED_MACRO_DIGITS,
+    MacroValidationError,
+    compile_macro,
+    fixed_macro_steps,
+    validate_macro,
+)
 
 
 class MacroTests(unittest.TestCase):
@@ -30,6 +36,20 @@ class MacroTests(unittest.TestCase):
     def test_rejects_macro_longer_than_fifteen_minutes(self) -> None:
         with self.assertRaises(MacroValidationError):
             validate_macro([{"type": "wait", "ms": 60000}] * 16)
+
+
+    def test_fixed_macro_is_exact(self) -> None:
+        self.assertEqual(
+            FIXED_MACRO_DIGITS,
+            "345455535455535455335555555544",
+        )
+        steps = fixed_macro_steps()
+        self.assertEqual(len(steps), 30)
+        expected = {"3": "F1", "4": "F2", "5": "DOWN"}
+        self.assertEqual(
+            [step["key"] for step in steps],
+            [expected[digit] for digit in FIXED_MACRO_DIGITS],
+        )
 
 
 if __name__ == "__main__":

@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .macro import fixed_macro_steps
+
 APP_DIR_NAME = "TG_CONTROLLER_PRO"
 DEFAULT_GAME_PATH = r"C:\ArcadeGames\paradiselost\Farcry_R.exe"
 
@@ -20,12 +22,12 @@ def config_dir() -> Path:
 
 @dataclass
 class AppConfig:
-    schema: int = 4
+    schema: int = 5
     game_path: str = DEFAULT_GAME_PATH
     game_arguments: str = ""
     working_directory: str = r"C:\ArcadeGames\paradiselost"
     macro_delay_seconds: int = 40
-    macro_enabled: bool = False
+    macro_enabled: bool = True
     macro_steps: list[dict[str, Any]] = field(default_factory=list)
     auto_start_game: bool = False
     auto_restart_game: bool = False
@@ -40,6 +42,9 @@ class AppConfig:
     p2_smoothing: int = 4
 
     def normalize(self) -> None:
+        self.schema = 5
+        self.macro_enabled = True
+        self.macro_steps = fixed_macro_steps()
         self.macro_delay_seconds = max(0, min(999, int(self.macro_delay_seconds)))
         self.restart_delay_seconds = max(1, min(999, int(self.restart_delay_seconds)))
         self.relay_inactivity_seconds = max(0, min(3600, int(self.relay_inactivity_seconds)))

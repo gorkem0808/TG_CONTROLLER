@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CHECKS = {
     "Controller 10 sn kalibrasyon kısayolu": ("firmware/controller/main.c", "CALIBRATION_HOLD_MS 10000u"),
     "Controller 2 dk röle uykusu": ("firmware/controller/main.c", "settings.inactivity_s = 120u"),
-    "Röle tetik basılı sürece": ("firmware/controller/main.c", "relay_awake && buttons[BTN_P1_TRIGGER].stable"),
+    "Röle tetik basılı sürece": ("firmware/controller/main.c", "const bool relay1_active ="),
     "Tetik HID basılı sürece": ("firmware/controller/main.c", "buttons[BTN_P1_TRIGGER].stable"),
     "Bakım modu": ("firmware/controller/main.c", "maintenance_mode"),
     "GP2 10 sn makro": ("firmware/controller/main.c", "coin_long_latched"),
@@ -26,6 +26,12 @@ CHECKS = {
     "Varsayılan Paradise Lost yolu": ("desktop/tg_controller/config.py", r"C:\ArcadeGames\paradiselost\Farcry_R.exe"),
     "psutil bağımlılığı kaldırıldı": ("desktop/tg_controller/game.py", "_windows_process_names"),
     "Paketlenmiş EXE self-test": (".github/workflows/build.yml", "--self-test"),
+    "Sabit 30 adım makro": ("firmware/controller/main.c", "345455535455535455335555555544"),
+    "GP9 anında makro": ("firmware/controller/main.c", "PIN_MANUAL_MACRO 9u"),
+    "Açılış buton kilidi": ("firmware/controller/main.c", "ACCESS_WAIT_MACRO"),
+    "Makro sonrası kredi kilidi": ("firmware/controller/main.c", "ACCESS_WAIT_CREDIT"),
+    "Kredi sonrası buton açma": ("firmware/controller/main.c", "EVENT BUTTONS UNLOCKED"),
+    "Makro düzenlemesi engelli": ("firmware/controller/main.c", "ERR MACRO FIXED"),
 }
 
 

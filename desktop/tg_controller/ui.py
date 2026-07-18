@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import json
 import os
 import queue
 import threading
@@ -15,7 +14,7 @@ from .config import AppConfig, load_config, save_config
 from .device_manager import DeviceManager
 from .firmware_loader import FirmwareLoader
 from .game import GameManager
-from .macro import MacroValidationError, compile_macro, example_macro, validate_macro
+from .macro import FIXED_MACRO_DIGITS, fixed_macro_steps
 from .startup import is_autostart_enabled, set_autostart
 from .tray import TrayController
 from . import __version__
@@ -71,6 +70,9 @@ class ManagerApp:
         self.credit_var = tk.StringVar(value="0")
         self.relay_awake_var = tk.StringVar(value="UYKUDA — kredi bekliyor")
         self.maintenance_var = tk.StringVar(value="NORMAL")
+        self.button_gate_var = tk.StringVar(
+            value="KİLİTLİ — SABİT MAKRO BEKLENİYOR"
+        )
 
         self.device_vars: dict[str, dict[str, tk.StringVar]] = {}
         for role in ROLE_TITLES:
@@ -99,7 +101,7 @@ class ManagerApp:
 
         self.controller_buttons: dict[str, tk.StringVar] = {
             key: tk.StringVar(value="PASİF")
-            for key in ("C", "S1", "T1", "B1", "S2", "T2", "B2", "R1", "R2")
+            for key in ("C", "S1", "T1", "B1", "S2", "T2", "B2", "M9", "R1", "R2")
         }
         self.last_controller = {key: "0" for key in ("S1", "S2", "T1", "T2")}
         self.controller_status: dict[str, str] = {}
@@ -267,6 +269,12 @@ class ManagerApp:
         tk.Label(row, textvariable=self.maintenance_var, bg=PANEL, fg=TEXT,
                  font=("Segoe UI", 11, "bold")).pack(side="left")
 
+        gate_row = tk.Frame(summary, bg=PANEL)
+        gate_row.pack(fill="x", padx=14, pady=(0, 12))
+        tk.Label(gate_row, text="Silah butonları:", bg=PANEL, fg=MUTED).pack(side="left")
+        tk.Label(gate_row, textvariable=self.button_gate_var, bg=PANEL, fg=WARN,
+                 font=("Segoe UI", 12, "bold")).pack(side="left", padx=8)
+
     def _build_controller(self) -> None:
         status = self._panel(self.controller_tab, "Tuşlar ve Röleler — Canlı Test")
         status.pack(fill="x", pady=4)
@@ -284,6 +292,7 @@ class ManagerApp:
             ("S2", "GP6", "Player 2 Start", "Klavye 5"),
             ("T2", "GP7", "Player 2 Tetik", "Klavye 6 + Röle 2"),
             ("B2", "GP8", "Player 2 Bomba", "Klavye 7"),
+            ("M9", "GP9", "Sabit makroyu hemen çalıştır", "Süre beklemeden F1/F2/Aşağı"),
             ("R1", "GP27", "Player 1 Röle", "Tetik basılı sürece"),
             ("R2", "GP26", "Player 2 Röle", "Tetik basılı sürece"),
         )
@@ -379,7 +388,7 @@ class ManagerApp:
         self.game_args_var = tk.StringVar(value=self.config.game_arguments)
         self.workdir_var = tk.StringVar(value=self.config.working_directory)
         self.macro_delay_var = tk.IntVar(value=self.config.macro_delay_seconds)
-        self.macro_enabled_var = tk.BooleanVar(value=self.config.macro_enabled)
+        self.macro_enabled_var = tk.BooleanVar(value=True)
         self.auto_start_var = tk.BooleanVar(value=self.config.auto_start_game)
         self.auto_restart_var = tk.BooleanVar(value=self.config.auto_restart_game)
         self.require_devices_var = tk.BooleanVar(value=self.config.require_all_devices)
@@ -388,43 +397,120 @@ class ManagerApp:
         labels = ("Oyun EXE", "Ek argümanlar", "Çalışma klasörü")
         variables = (self.game_path_var, self.game_args_var, self.workdir_var)
         for row, (label, variable) in enumerate(zip(labels, variables)):
-            tk.Label(form, text=label, bg=PANEL, fg=MUTED).grid(row=row, column=0, sticky="w", padx=4, pady=5)
-            tk.Entry(form, textvariable=variable, bg=PANEL2, fg=TEXT, insertbackground=TEXT,
-                     width=85).grid(row=row, column=1, sticky="ew", padx=6, pady=5)
+            tk.Label(form, text=label, bg=PANEL, fg=MUTED).grid(
+                row=row, column=0, sticky="w", padx=4, pady=5
+            )
+            tk.Entry(
+                form,
+                textvariable=variable,
+                bg=PANEL2,
+                fg=TEXT,
+                insertbackground=TEXT,
+                width=85,
+            ).grid(row=row, column=1, sticky="ew", padx=6, pady=5)
         self._button(form, "Seç", self.choose_game, 8).grid(row=0, column=2, padx=4)
         form.grid_columnconfigure(1, weight=1)
 
         options = tk.Frame(panel, bg=PANEL)
         options.pack(fill="x", padx=14, pady=(0, 12))
-        tk.Label(options, text="Oyun açılış bekleme (0–999 sn):", bg=PANEL, fg=MUTED).pack(side="left")
-        tk.Spinbox(options, from_=0, to=999, textvariable=self.macro_delay_var, width=8,
-                   bg=PANEL2, fg=TEXT).pack(side="left", padx=6)
+        tk.Label(
+            options,
+            text="Oyun açılış bekleme (0–999 sn):",
+            bg=PANEL,
+            fg=MUTED,
+        ).pack(side="left")
+        tk.Spinbox(
+            options,
+            from_=0,
+            to=999,
+            textvariable=self.macro_delay_var,
+            width=8,
+            bg=PANEL2,
+            fg=TEXT,
+        ).pack(side="left", padx=6)
+
         for text, variable in (
-            ("1 kredi makrosu açık", self.macro_enabled_var),
             ("Windows açılınca oyun", self.auto_start_var),
             ("Oyun kapanırsa tekrar aç", self.auto_restart_var),
             ("3 Pico bağlı olsun", self.require_devices_var),
             ("Program Windows ile başlasın", self.autostart_var),
         ):
-            tk.Checkbutton(options, text=text, variable=variable, bg=PANEL, fg=TEXT,
-                           selectcolor=PANEL2, activebackground=PANEL,
-                           activeforeground=TEXT).pack(side="left", padx=7)
+            tk.Checkbutton(
+                options,
+                text=text,
+                variable=variable,
+                bg=PANEL,
+                fg=TEXT,
+                selectcolor=PANEL2,
+                activebackground=PANEL,
+                activeforeground=TEXT,
+            ).pack(side="left", padx=7)
 
-        editor = self._panel(self.macro_tab, "Pico'da Saklanacak Operatör Makrosu — JSON")
-        editor.pack(fill="both", expand=True, pady=8)
-        self.macro_text = tk.Text(editor, height=13, bg="#0d131b", fg=TEXT,
-                                  insertbackground=TEXT, font=("Consolas", 10), wrap="none")
-        self.macro_text.pack(fill="both", expand=True, padx=12, pady=(0, 8))
-        buttons = tk.Frame(editor, bg=PANEL)
+        fixed = self._panel(
+            self.macro_tab,
+            "Sabit Operatör Makrosu — Değiştirilemez",
+        )
+        fixed.pack(fill="both", expand=True, pady=8)
+
+        tk.Label(
+            fixed,
+            text=f"Dizi: {FIXED_MACRO_DIGITS}",
+            bg=PANEL,
+            fg=TEXT,
+            font=("Consolas", 14, "bold"),
+            wraplength=1050,
+            justify="left",
+        ).pack(anchor="w", padx=14, pady=(2, 8))
+
+        tk.Label(
+            fixed,
+            text=(
+                "3 = F1    •    4 = F2    •    5 = AŞAĞI\n"
+                "Bilgisayar/oyun açılışında belirlenen süre bitene kadar "
+                "GP3–GP8 oyun butonları ve titreşim röleleri kilitlidir. "
+                "Makro bitince sistem kredi bekler. GP2 ile kredi atıldığında "
+                "butonlar kullanılabilir olur. GP9 makroyu süre beklemeden başlatır."
+            ),
+            bg=PANEL,
+            fg=MUTED,
+            font=("Segoe UI", 11),
+            wraplength=1100,
+            justify="left",
+        ).pack(anchor="w", padx=14, pady=(0, 12))
+
+        buttons = tk.Frame(fixed, bg=PANEL)
         buttons.pack(fill="x", padx=12, pady=(0, 12))
-        self._button(buttons, "Ayarları Kaydet", self.save_game_settings, 16).pack(side="left", padx=4)
-        self._button(buttons, "Makroyu Pico'ya Yaz", self.upload_macro, 19).pack(side="left", padx=4)
-        self._button(buttons, "Örnek F1/F2 Getir", self.insert_example_macro, 18).pack(side="left", padx=4)
-        self._button(buttons, "Oyunu Başlat", self.launch_game, 14).pack(side="left", padx=4)
-        self._button(buttons, "Makroyu Şimdi Çalıştır", self.run_macro_now, 22).pack(side="left", padx=4)
-        self._button(buttons, "Sayaç/Makro İptal", self.cancel_macro, 18).pack(side="left", padx=4)
-        tk.Label(buttons, textvariable=self.macro_status_var, bg=PANEL, fg=WARN,
-                 font=("Segoe UI", 10, "bold")).pack(side="right", padx=8)
+        self._button(
+            buttons,
+            "Ayarları Kaydet",
+            self.save_game_settings,
+            16,
+        ).pack(side="left", padx=4)
+        self._button(
+            buttons,
+            "Oyunu Başlat",
+            self.launch_game,
+            14,
+        ).pack(side="left", padx=4)
+        self._button(
+            buttons,
+            "Makroyu Şimdi Çalıştır",
+            self.run_macro_now,
+            22,
+        ).pack(side="left", padx=4)
+        self._button(
+            buttons,
+            "Sayaç/Makro İptal",
+            self.cancel_macro,
+            18,
+        ).pack(side="left", padx=4)
+        tk.Label(
+            buttons,
+            textvariable=self.macro_status_var,
+            bg=PANEL,
+            fg=WARN,
+            font=("Segoe UI", 10, "bold"),
+        ).pack(side="right", padx=8)
 
     def _build_firmware_tab(self) -> None:
         info = tk.Label(
@@ -466,8 +552,8 @@ class ManagerApp:
         self.log_tab.rowconfigure(0, weight=1)
 
     def _load_config_to_ui(self) -> None:
-        self.macro_text.delete("1.0", "end")
-        self.macro_text.insert("1.0", json.dumps(self.config.macro_steps, ensure_ascii=False, indent=2))
+        self.config.macro_enabled = True
+        self.config.macro_steps = fixed_macro_steps()
 
     def _process_events(self) -> None:
         for _ in range(250):
@@ -551,8 +637,26 @@ class ManagerApp:
             values = self._values(line)
             self.controller_status = values
             self.credit_var.set(values.get("CREDIT", "0"))
-            self.relay_awake_var.set("AKTİF" if values.get("RELAYAWAKE") == "1" else "UYKUDA — kredi bekliyor")
-            self.maintenance_var.set("BAKIM / KALİBRASYON" if values.get("MAINT") == "1" else "NORMAL")
+            self.relay_awake_var.set(
+                "AKTİF" if values.get("RELAYAWAKE") == "1"
+                else "UYKUDA / KİLİTLİ"
+            )
+            self.maintenance_var.set(
+                "BAKIM / KALİBRASYON"
+                if values.get("MAINT") == "1"
+                else "NORMAL"
+            )
+            gate = values.get("GATE", "0")
+            gate_text = {
+                "0": "KİLİTLİ — SABİT MAKRO BEKLENİYOR",
+                "1": "KİLİTLİ — MAKRO TAMAM, KREDİ BEKLENİYOR",
+                "2": (
+                    "KULLANILABİLİR"
+                    if values.get("BUTTONS") == "1"
+                    else "KREDİ ALINDI — BUTONLARI BIRAKIP YENİDEN BAS"
+                ),
+            }
+            self.button_gate_var.set(gate_text.get(gate, "BİLİNMİYOR"))
             for key in self.controller_buttons:
                 self.controller_buttons[key].set("AKTİF" if values.get(key) == "1" else "PASİF")
 
@@ -623,12 +727,29 @@ class ManagerApp:
             values = self._values(line)
             self.finish_calibration(False, f"Kalibrasyon hatası: {values.get('REASON','bilinmiyor')}")
         elif line.startswith("EVENT MACRO START"):
-            self.macro_status_var.set("Makro: çalışıyor")
+            self.game_manager.cancel_countdown_for_manual_macro()
+            values = self._values(line)
+            source = values.get("SOURCE", "PC")
+            self.macro_status_var.set(f"Makro: çalışıyor — kaynak {source}")
+            self.button_gate_var.set("KİLİTLİ — SABİT MAKRO ÇALIŞIYOR")
         elif line.startswith("EVENT MACRO STEP"):
             values = self._values(line)
             self.macro_status_var.set(f"Makro: adım {values.get('STEP','-')}/{values.get('TOTAL','-')}")
         elif line.startswith("EVENT MACRO DONE"):
-            self.macro_status_var.set("Makro: tamamlandı")
+            self.macro_status_var.set("Makro: tamamlandı — kredi bekleniyor")
+            self.button_gate_var.set(
+                "KİLİTLİ — MAKRO TAMAM, KREDİ BEKLENİYOR"
+            )
+        elif line.startswith("EVENT BUTTONS UNLOCKED"):
+            self.button_gate_var.set(
+                "KREDİ ALINDI — BUTONLARI BIRAKIP YENİDEN BAS"
+            )
+        elif line.startswith("EVENT BUTTONS ARMED"):
+            self.button_gate_var.set("KULLANILABİLİR")
+        elif line.startswith("EVENT COIN BLOCKED"):
+            self.button_gate_var.set(
+                "KİLİTLİ — ÖNCE SABİT MAKRO TAMAMLANMALI"
+            )
         elif line.startswith("EVENT MACRO STOPPED"):
             self.macro_status_var.set("Makro: durduruldu")
         elif line.startswith("CONFIG") and role == "controller":
@@ -882,66 +1003,49 @@ class ManagerApp:
 
     def save_game_settings(self, show_message: bool = True) -> bool:
         try:
-            raw = json.loads(self.macro_text.get("1.0", "end").strip() or "[]")
-            steps = validate_macro(raw)
             delay = max(0, min(999, int(self.macro_delay_var.get())))
-        except (json.JSONDecodeError, MacroValidationError, ValueError, tk.TclError) as exc:
-            messagebox.showerror(APP_TITLE, f"Makro/ayar hatası: {exc}")
+        except (ValueError, tk.TclError) as exc:
+            messagebox.showerror(APP_TITLE, f"Bekleme süresi hatası: {exc}")
             return False
-        if self.macro_enabled_var.get() and not steps:
-            messagebox.showerror(APP_TITLE, "Makro açıkken en az bir doğrulanmış adım olmalıdır.")
-            return False
+
         self.config.game_path = self.game_path_var.get().strip()
         self.config.game_arguments = self.game_args_var.get().strip()
         self.config.working_directory = self.workdir_var.get().strip()
         self.config.macro_delay_seconds = delay
-        self.config.macro_enabled = bool(self.macro_enabled_var.get())
-        self.config.macro_steps = steps
+        self.config.macro_enabled = True
+        self.config.macro_steps = fixed_macro_steps()
         self.config.auto_start_game = bool(self.auto_start_var.get())
         self.config.auto_restart_game = bool(self.auto_restart_var.get())
         self.config.require_all_devices = bool(self.require_devices_var.get())
         self.config.windows_autostart = bool(self.autostart_var.get())
         save_config(self.config)
+
         try:
             set_autostart(self.config.windows_autostart)
         except OSError as exc:
-            messagebox.showerror(APP_TITLE, f"Windows başlangıç ayarı yazılamadı: {exc}")
+            messagebox.showerror(
+                APP_TITLE,
+                f"Windows başlangıç ayarı yazılamadı: {exc}",
+            )
             return False
+
         if show_message:
-            messagebox.showinfo(APP_TITLE, "Oyun ve başlangıç ayarları kaydedildi.")
+            messagebox.showinfo(
+                APP_TITLE,
+                "Oyun, başlangıç ve sabit makro bekleme ayarları kaydedildi.",
+            )
         return True
 
     def upload_macro(self) -> None:
-        if not self.save_game_settings(show_message=False):
-            return
-        try:
-            compiled = compile_macro(self.config.macro_steps)
-        except MacroValidationError as exc:
-            messagebox.showerror(APP_TITLE, str(exc))
-            return
-
-        def worker() -> None:
-            commands = ["MACRO CLEAR"]
-            commands.extend(f"MACRO ADD {step.keycode} {step.hold_ms} {step.wait_ms}" for step in compiled)
-            commands.append(f"MACRO ENABLE {int(self.config.macro_enabled and bool(compiled))}")
-            commands.append("SAVE")
-            for command in commands:
-                if not self.device_manager.send("controller", command):
-                    self._queue_event({"type": "macro_error", "message": "Controller bağlantısı kesildi"})
-                    return
-                time.sleep(0.04)
-            self._queue_event({"type": "macro_uploaded"})
-
-        threading.Thread(target=worker, daemon=True).start()
-
-    def insert_example_macro(self) -> None:
-        self.macro_text.delete("1.0", "end")
-        self.macro_text.insert("1.0", json.dumps(example_macro(), ensure_ascii=False, indent=2))
-        self.macro_enabled_var.set(False)
         messagebox.showinfo(
             APP_TITLE,
-            "F1/F2 yalnız biçim örneğidir. Kabindeki gerçek operatör tuş sırası doğrulanmadan makroyu açmayın.",
+            "Makro firmware içinde sabittir ve değiştirilemez.\n"
+            f"{FIXED_MACRO_DIGITS}\n"
+            "3=F1, 4=F2, 5=AŞAĞI",
         )
+
+    def insert_example_macro(self) -> None:
+        self.upload_macro()
 
     def launch_game(self) -> None:
         if not self.save_game_settings(show_message=False):
@@ -952,10 +1056,8 @@ class ManagerApp:
         self.game_manager.launch(self.config, lambda: self.send("controller", "MACRO START"))
 
     def run_macro_now(self) -> None:
-        if self.config.macro_enabled:
-            self.send("controller", "MACRO START", warn=True)
-        else:
-            messagebox.showwarning(APP_TITLE, "Önce doğrulanmış makroyu etkinleştirip Pico'ya yazın.")
+        self.game_manager.cancel_countdown_for_manual_macro()
+        self.send("controller", "MACRO START", warn=True)
 
     def cancel_macro(self) -> None:
         self.game_manager.cancel_countdown()

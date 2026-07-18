@@ -14,8 +14,8 @@ class ProjectContractTests(unittest.TestCase):
             "CALIBRATION_HOLD_MS 10000u",
             "MAINTENANCE_TIMEOUT_MS 180000u",
             "settings.inactivity_s = 120u",
-            "relay_awake && buttons[BTN_P1_TRIGGER].stable",
-            "relay_awake && buttons[BTN_P2_TRIGGER].stable",
+            "const bool relay1_active =",
+            "const bool relay2_active =",
             "HID_KEY_3",
             "HID_KEY_6",
             "MACRO MAX",
@@ -60,7 +60,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertNotIn("import psutil", game_text)
         self.assertNotIn("psutil==", requirements)
         self.assertIn("--self-test", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_2.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_3.exe", workflow)
 
 
     def test_tray_hotfix_contract(self) -> None:
@@ -73,7 +73,25 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("signal_show_request", single)
         self.assertIn("consume_show_request", single)
         self.assertIn("pystray._win32", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_2.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_3.exe", workflow)
+
+
+    def test_fixed_macro_gate_and_gp9_contract(self) -> None:
+        controller = (ROOT / "firmware/controller/main.c").read_text(encoding="utf-8")
+        ui = (ROOT / "desktop/tg_controller/ui.py").read_text(encoding="utf-8")
+        config = (ROOT / "desktop/tg_controller/config.py").read_text(encoding="utf-8")
+        self.assertIn(
+            '345455535455535455335555555544',
+            controller,
+        )
+        self.assertIn("PIN_MANUAL_MACRO 9u", controller)
+        self.assertIn("ACCESS_WAIT_MACRO", controller)
+        self.assertIn("ACCESS_WAIT_CREDIT", controller)
+        self.assertIn("ACCESS_READY", controller)
+        self.assertIn("EVENT BUTTONS UNLOCKED", controller)
+        self.assertIn("ERR MACRO FIXED", controller)
+        self.assertIn("GP9", ui)
+        self.assertIn("self.macro_enabled = True", config)
 
 
 if __name__ == "__main__":

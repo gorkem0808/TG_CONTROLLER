@@ -1,27 +1,24 @@
-TG_CONTROLLER_PRO V4.2 — SİSTEM TEPSİSİ HOTFIX
+TG_CONTROLLER_PRO V4.3 — SABİT MAKRO VE BUTON KİLİDİ
 
-DÜZELTİLEN SORUN
-- Saat yanındaki TG_CONTROLLER_PRO simgesinin hiç oluşmaması.
-- Program X ile gizlenince yeniden açılamaması.
-- Tepsi servisi hata verdiğinde hatanın sessizce kaybolması.
+1. ZIP içeriğini GitHub TG_CONTROLLER_PRO deposuna yükleyin.
+2. .github klasörü görünmezse WORKFLOW_KOPYASI_BUILD_PRO_V4_3.yml içeriğini
+   .github/workflows/build.yml dosyasına yapıştırın.
+3. Actions → Build TG_CONTROLLER_PRO V4.3 FIXED MACRO GATE çalışsın.
+4. Şu iki artifact'i indirin:
+   - TG_CONTROLLER_PRO_V4_3_ALL_UF2
+   - TG_CONTROLLER_PRO_MANAGER_V4_3_WINDOWS
+5. Controller Pico'ya TG_CONTROLLER_PRO_CONTROLLER_V4_3.uf2 yükleyin.
+6. Yeni davranış Controller firmware'de olduğu için Controller UF2 güncellemesi zorunludur.
+7. P1 ve P2 Gun firmware kodu değişmedi; isterseniz mevcut V4 Gun UF2'leri bırakabilirsiniz.
+8. TG_CONTROLLER_PRO_MANAGER_V4_3.exe dosyasını çalıştırın.
 
-YENİ DAVRANIŞ
-1. Program tepsi simgesinin gerçekten hazır olduğunu kontrol eder.
-2. Simge oluşmazsa pencereyi gizlemez ve gerçek hata mesajını gösterir.
-3. Program gizliyken EXE'ye tekrar çift tıklarsanız mevcut pencere açılır.
-4. Aynı programın ikinci kopyası açılmaz.
-5. PyInstaller paketine pystray Windows arka ucu açıkça eklenmiştir.
+SABİT MAKRO
+345455535455535455335555555544
+3=F1, 4=F2, 5=AŞAĞI
 
-YÜKLEME
-1. ZIP içeriğini GitHub deposuna yükleyin.
-2. Actions → Build TG_CONTROLLER_PRO V4.2 TRAY HOTFIX çalışmasını açın.
-3. TG_CONTROLLER_PRO_MANAGER_V4_2_WINDOWS paketini indirin.
-4. TG_CONTROLLER_PRO_MANAGER_V4_2.exe dosyasını çalıştırın.
-
-PICO
-- Firmware değiştirilmedi.
-- Pico'lara tekrar UF2 yüklemeniz gerekmez.
-
-PROGRAMI YENİDEN AÇMA
-- Tepsi simgesi varsa: simgeye çift tıklayın veya sağ tık → Programı Göster.
-- Simge görünmese bile: TG_CONTROLLER_PRO_MANAGER_V4_2.exe dosyasına tekrar çift tıklayın.
+ÇALIŞMA
+- Açılışta GP3–GP8 kilitli.
+- Ayarlanan süre sonunda makro çalışır.
+- Makro tamamlanınca GP2 kredi beklenir.
+- GP2 kredi sonrası silah butonları kullanılabilir.
+- GP9 makroyu süre beklemeden hemen çalıştırır.
