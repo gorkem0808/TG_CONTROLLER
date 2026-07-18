@@ -292,7 +292,7 @@ class ManagerApp:
             ("S2", "GP6", "Player 2 Start", "Klavye 5"),
             ("T2", "GP7", "Player 2 Tetik", "Klavye 6 + Röle 2"),
             ("B2", "GP8", "Player 2 Bomba", "Klavye 7"),
-            ("M9", "GP9", "Sabit makroyu hemen çalıştır", "Süre beklemeden F1/F2/Aşağı"),
+            ("M9", "GP9", "Sabit makroyu hemen çalıştır", "Süre beklemeden 3/4/5 rakamları"),
             ("R1", "GP27", "Player 1 Röle", "Tetik basılı sürece"),
             ("R2", "GP26", "Player 2 Röle", "Tetik basılı sürece"),
         )
@@ -465,7 +465,8 @@ class ManagerApp:
         tk.Label(
             fixed,
             text=(
-                "3 = F1    •    4 = F2    •    5 = AŞAĞI\n"
+                "3 = KLAVYE 3    •    4 = KLAVYE 4    •    5 = KLAVYE 5\n"
+                "Fiziksel tuş eşlemesi: GP4=3, GP5=4, GP6=5. "
                 "Bilgisayar/oyun açılışında belirlenen süre bitene kadar "
                 "GP3–GP8 oyun butonları ve titreşim röleleri kilitlidir. "
                 "Makro bitince sistem kredi bekler. GP2 ile kredi atıldığında "
@@ -1041,7 +1042,7 @@ class ManagerApp:
             APP_TITLE,
             "Makro firmware içinde sabittir ve değiştirilemez.\n"
             f"{FIXED_MACRO_DIGITS}\n"
-            "3=F1, 4=F2, 5=AŞAĞI",
+            "GP4=3, GP5=4, GP6=5 — makro da yalnız 3/4/5 rakamlarını yazar",
         )
 
     def insert_example_macro(self) -> None:

@@ -1,0 +1,87 @@
+TG_CONTROLLER_PRO V4.4 DOĞRULAMA
+
+Python py_compile: OK
+Unit testler: OK
+Statik proje doğrulaması: OK
+Sabit makro: 345455535455535455335555555544
+Makro 3 → Klavye 3: OK
+Makro 4 → Klavye 4: OK
+Makro 5 → Klavye 5: OK
+GP4 → Klavye 3: OK
+GP5 → Klavye 4: OK
+GP6 → Klavye 5: OK
+F1 eşlemesi: KALDIRILDI
+F2 eşlemesi: KALDIRILDI
+Aşağı eşlemesi: KALDIRILDI
+GP9 anında sabit makro: KORUNDU
+Açılış buton kilidi: KORUNDU
+Makro sonrası GP2 kredi bekleme: KORUNDU
+GP2 kredi sonrası buton açma: KORUNDU
+
+Unit test çıktısı:
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/generated/interface/models.py", line 30820, in hydrate_crdt_from_proto
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/rpc/remote.py", line 749, in __call__
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/rpc/client.py", line 150, in call
+artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.
+test_atomic_save_and_load (test_config.ConfigTests.test_atomic_save_and_load) ... ok
+test_defaults_match_cabinet_path_and_limits (test_config.ConfigTests.test_defaults_match_cabinet_path_and_limits) ... ok
+test_normalize_clamps_values (test_config.ConfigTests.test_normalize_clamps_values) ... ok
+test_compiles_key_and_wait (test_macro.MacroTests.test_compiles_key_and_wait) ... ok
+test_fixed_macro_is_exact (test_macro.MacroTests.test_fixed_macro_is_exact) ... ok
+test_rejects_macro_longer_than_fifteen_minutes (test_macro.MacroTests.test_rejects_macro_longer_than_fifteen_minutes) ... ok
+test_rejects_too_many_steps (test_macro.MacroTests.test_rejects_too_many_steps) ... ok
+test_rejects_unknown_key (test_macro.MacroTests.test_rejects_unknown_key) ... ok
+test_controller_contract (test_project_contract.ProjectContractTests.test_controller_contract) ... ok
+test_fixed_macro_gate_and_gp9_contract (test_project_contract.ProjectContractTests.test_fixed_macro_gate_and_gp9_contract) ... ok
+test_gun_contract (test_project_contract.ProjectContractTests.test_gun_contract) ... ok
+test_manager_has_no_psutil_runtime_dependency (test_project_contract.ProjectContractTests.test_manager_has_no_psutil_runtime_dependency) ... ok
+test_no_old_release_names_in_user_facing_files (test_project_contract.ProjectContractTests.test_no_old_release_names_in_user_facing_files) ... ok
+test_number_key_and_gpio_mapping_contract (test_project_contract.ProjectContractTests.test_number_key_and_gpio_mapping_contract) ... ok
+test_tray_hotfix_contract (test_project_contract.ProjectContractTests.test_tray_hotfix_contract) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.013s
+
+OK
+
+Statik doğrulama çıktısı:
+OK: Controller 10 sn kalibrasyon kısayolu
+OK: Controller 2 dk röle uykusu
+OK: Röle tetik basılı sürece
+OK: Tetik HID basılı sürece
+OK: Bakım modu
+OK: GP2 10 sn makro
+OK: GP19 P1/P2
+OK: 32 örnek kalibrasyon
+OK: Kararsız köşe reddi
+OK: Gerçek dört köşe dönüşümü
+OK: Çift sektör flash
+OK: Global F8
+OK: Sistem tepsisi
+OK: Tek örnek kilidi
+OK: Otomatik COM tanıma
+OK: 0–999 makro bekleme
+OK: Varsayılan Paradise Lost yolu
+OK: psutil bağımlılığı kaldırıldı
+OK: Paketlenmiş EXE self-test
+OK: Sabit 30 adım makro
+OK: Makro 3 rakamı
+OK: Makro 4 rakamı
+OK: Makro 5 rakamı
+OK: GP4 3 eşlemesi
+OK: GP5 4 eşlemesi
+OK: GP6 5 eşlemesi
+OK: GP9 anında makro
+OK: Açılış buton kilidi
+OK: Makro sonrası kredi kilidi
+OK: Kredi sonrası buton açma
+OK: Makro düzenlemesi engelli
+
+Not: Gerçek Pico SDK/ARM derlemesi GitHub Actions üzerinde yapılacaktır.
+Controller Pico'ya V4.4 UF2 yüklenmesi zorunludur.

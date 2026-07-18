@@ -1,24 +1,22 @@
-TG_CONTROLLER_PRO V4.3 — SABİT MAKRO VE BUTON KİLİDİ
+TG_CONTROLLER_PRO V4.4 — RAKAM MAKROSU
 
-1. ZIP içeriğini GitHub TG_CONTROLLER_PRO deposuna yükleyin.
-2. .github klasörü görünmezse WORKFLOW_KOPYASI_BUILD_PRO_V4_3.yml içeriğini
+1. ZIP içeriğini GitHub deposuna yükleyin.
+2. .github görünmezse WORKFLOW_KOPYASI_BUILD_PRO_V4_4.yml içeriğini
    .github/workflows/build.yml dosyasına yapıştırın.
-3. Actions → Build TG_CONTROLLER_PRO V4.3 FIXED MACRO GATE çalışsın.
-4. Şu iki artifact'i indirin:
-   - TG_CONTROLLER_PRO_V4_3_ALL_UF2
-   - TG_CONTROLLER_PRO_MANAGER_V4_3_WINDOWS
-5. Controller Pico'ya TG_CONTROLLER_PRO_CONTROLLER_V4_3.uf2 yükleyin.
-6. Yeni davranış Controller firmware'de olduğu için Controller UF2 güncellemesi zorunludur.
-7. P1 ve P2 Gun firmware kodu değişmedi; isterseniz mevcut V4 Gun UF2'leri bırakabilirsiniz.
-8. TG_CONTROLLER_PRO_MANAGER_V4_3.exe dosyasını çalıştırın.
+3. Actions → Build TG_CONTROLLER_PRO V4.4 NUMBER MACRO çalışsın.
+4. Şu artifact'leri indirin:
+   - TG_CONTROLLER_PRO_V4_4_ALL_UF2
+   - TG_CONTROLLER_PRO_MANAGER_V4_4_WINDOWS
+5. Controller Pico'ya TG_CONTROLLER_PRO_CONTROLLER_V4_4.uf2 yükleyin.
+6. Manager olarak TG_CONTROLLER_PRO_MANAGER_V4_4.exe kullanın.
+
+KESİN EŞLEŞTİRME
+GP4 = klavye 3
+GP5 = klavye 4
+GP6 = klavye 5
 
 SABİT MAKRO
 345455535455535455335555555544
-3=F1, 4=F2, 5=AŞAĞI
 
-ÇALIŞMA
-- Açılışta GP3–GP8 kilitli.
-- Ayarlanan süre sonunda makro çalışır.
-- Makro tamamlanınca GP2 kredi beklenir.
-- GP2 kredi sonrası silah butonları kullanılabilir.
-- GP9 makroyu süre beklemeden hemen çalıştırır.
+Makro yalnız klavye 3, 4 ve 5 rakamlarını gönderir.
+F1, F2 ve Aşağı kullanılmaz.

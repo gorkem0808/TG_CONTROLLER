@@ -60,7 +60,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertNotIn("import psutil", game_text)
         self.assertNotIn("psutil==", requirements)
         self.assertIn("--self-test", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_3.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_4.exe", workflow)
 
 
     def test_tray_hotfix_contract(self) -> None:
@@ -73,7 +73,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("signal_show_request", single)
         self.assertIn("consume_show_request", single)
         self.assertIn("pystray._win32", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_3.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_4.exe", workflow)
 
 
     def test_fixed_macro_gate_and_gp9_contract(self) -> None:
@@ -92,6 +92,30 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("ERR MACRO FIXED", controller)
         self.assertIn("GP9", ui)
         self.assertIn("self.macro_enabled = True", config)
+
+
+    def test_number_key_and_gpio_mapping_contract(self) -> None:
+        controller = (ROOT / "firmware/controller/main.c").read_text(encoding="utf-8")
+        macro = (ROOT / "desktop/tg_controller/macro.py").read_text(encoding="utf-8")
+        ui = (ROOT / "desktop/tg_controller/ui.py").read_text(encoding="utf-8")
+
+        self.assertIn("#define PIN_P1_TRIGGER 4u", controller)
+        self.assertIn("#define PIN_P1_BOMB    5u", controller)
+        self.assertIn("#define PIN_P2_START   6u", controller)
+
+        self.assertIn("return HID_KEY_3;", controller)
+        self.assertIn("return HID_KEY_4;", controller)
+        self.assertIn("return HID_KEY_5;", controller)
+
+        self.assertNotIn("return HID_KEY_F1;", controller)
+        self.assertNotIn("return HID_KEY_F2;", controller)
+        self.assertNotIn("return HID_KEY_ARROW_DOWN;", controller)
+
+        self.assertIn(
+            'FIXED_DIGIT_TO_KEY = {"3": "3", "4": "4", "5": "5"}',
+            macro,
+        )
+        self.assertIn("GP4=3, GP5=4, GP6=5", ui)
 
 
 if __name__ == "__main__":

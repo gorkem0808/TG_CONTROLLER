@@ -287,13 +287,13 @@ static bool gameplay_outputs_enabled(void) {
 
 static uint8_t fixed_macro_keycode(char token) {
     if (token == '3') {
-        return HID_KEY_F1;
+        return HID_KEY_3;
     }
     if (token == '4') {
-        return HID_KEY_F2;
+        return HID_KEY_4;
     }
     if (token == '5') {
-        return HID_KEY_ARROW_DOWN;
+        return HID_KEY_5;
     }
     return 0u;
 }
@@ -691,9 +691,9 @@ static void process_command(const char *command, uint32_t now_ms) {
     unsigned a = 0u;
 
     if (strcmp(command, "PING") == 0) {
-        cdc_write_line("PONG TG_CONTROLLER_PRO V4.3.0");
+        cdc_write_line("PONG TG_CONTROLLER_PRO V4.4.0");
     } else if (strcmp(command, "INFO") == 0) {
-        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=4.3.0 BOARD=RP2040 MACRO=FIXED GP9=MANUAL");
+        cdc_write_line("INFO NAME=TG_CONTROLLER VERSION=4.4.0 BOARD=RP2040 MACRO=FIXED_NUMBERS GP9=MANUAL");
     } else if (strcmp(command, "STATUS") == 0) {
         send_status();
     } else if (strcmp(command, "CONFIG") == 0) {

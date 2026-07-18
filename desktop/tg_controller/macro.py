@@ -9,7 +9,7 @@ class MacroValidationError(ValueError):
 
 
 FIXED_MACRO_DIGITS = "345455535455535455335555555544"
-FIXED_DIGIT_TO_KEY = {"3": "F1", "4": "F2", "5": "DOWN"}
+FIXED_DIGIT_TO_KEY = {"3": "3", "4": "4", "5": "5"}
 FIXED_MACRO_HOLD_MS = 100
 FIXED_MACRO_WAIT_MS = 300
 

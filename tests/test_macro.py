@@ -15,11 +15,11 @@ class MacroTests(unittest.TestCase):
     def test_compiles_key_and_wait(self) -> None:
         compiled = compile_macro(
             [
-                {"type": "key", "key": "F1", "hold_ms": 100, "wait_ms": 300},
+                {"type": "key", "key": "3", "hold_ms": 100, "wait_ms": 300},
                 {"type": "wait", "ms": 750},
             ]
         )
-        self.assertEqual(compiled[0].keycode, 0x3A)
+        self.assertEqual(compiled[0].keycode, 0x20)
         self.assertEqual(compiled[0].hold_ms, 100)
         self.assertEqual(compiled[0].wait_ms, 300)
         self.assertEqual(compiled[1].keycode, 0)
@@ -45,7 +45,7 @@ class MacroTests(unittest.TestCase):
         )
         steps = fixed_macro_steps()
         self.assertEqual(len(steps), 30)
-        expected = {"3": "F1", "4": "F2", "5": "DOWN"}
+        expected = {"3": "3", "4": "4", "5": "5"}
         self.assertEqual(
             [step["key"] for step in steps],
             [expected[digit] for digit in FIXED_MACRO_DIGITS],
