@@ -118,12 +118,15 @@ class ManagerApp:
         self._auto_start_attempted = False
         self._last_auto_start_attempt = 0.0
         self._closing = False
+        self.tray_available = False
+        self._start_minimized_requested = bool(
+            start_minimized or self.config.start_minimized
+        )
 
         self._build_style()
         self._build_ui()
         self._load_config_to_ui()
         self._register_hotkey()
-        self.tray.start()
         self.device_manager.start()
 
         self.root.protocol("WM_DELETE_WINDOW", self.hide_window)
@@ -133,9 +136,7 @@ class ManagerApp:
         self.root.after(500, self._periodic_tasks)
         self.root.after(2000, self._renew_passive_lease)
         self.root.after(30000, self._maintenance_keepalive)
-
-        if start_minimized or self.config.start_minimized:
-            self.root.after(250, self.hide_window)
+        self.root.after(150, self._start_tray_service)
 
     def _queue_event(self, event: dict[str, Any]) -> None:
         try:
@@ -1026,12 +1027,47 @@ class ManagerApp:
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
 
+    def _start_tray_service(self) -> None:
+        self.tray_available = self.tray.start()
+
+        if not self.tray_available:
+            self.root.deiconify()
+            self.root.lift()
+            messagebox.showwarning(
+                APP_TITLE,
+                "Sistem tepsisi simgesi başlatılamadı.\n\n"
+                f"{self.tray.last_error}\n\n"
+                "Program güvenlik için gizlenmeyecek. "
+                "Yeni EXE açıldığında mevcut pencere öne gelecektir.",
+            )
+            return
+
+        if self._start_minimized_requested:
+            self.hide_window()
+
     def show_window(self) -> None:
         self.root.deiconify()
+        self.root.state("normal")
         self.root.lift()
+        try:
+            self.root.attributes("-topmost", True)
+            self.root.after(
+                250,
+                lambda: self.root.attributes("-topmost", False),
+            )
+        except tk.TclError:
+            pass
         self.root.focus_force()
 
     def hide_window(self) -> None:
+        if not self.tray_available:
+            messagebox.showwarning(
+                APP_TITLE,
+                "Sistem tepsisi hazır olmadığı için program gizlenmedi.\n"
+                "Programı açık bırakın veya EXE'yi yeniden çalıştırın.",
+            )
+            return
+
         self.root.withdraw()
 
     def close_app(self) -> None:

@@ -1,3 +1,7 @@
+# TG_CONTROLLER_PRO V4.2 TRAY HOTFIX
+
+> Sistem tepsisi simgesi doğrulanmadan pencere artık gizlenmez. Program gizliyken EXE tekrar çalıştırılırsa mevcut pencere açılır.
+
 # TG_CONTROLLER_PRO V4.1 HOTFIX
 
 > `psutil` açılış hatası kaldırıldı. Windows Manager artık harici psutil paketine ihtiyaç duymaz ve GitHub'da paketlenmiş EXE self-test başarılı olmadan yayınlanmaz.

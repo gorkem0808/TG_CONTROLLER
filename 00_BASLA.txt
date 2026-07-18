@@ -1,24 +1,27 @@
-TG_CONTROLLER_PRO V4.1 HOTFIX — KURULUM
+TG_CONTROLLER_PRO V4.2 — SİSTEM TEPSİSİ HOTFIX
 
-BU SÜRÜMDE DÜZELTİLEN HATA
-- Açılışta görülen "ModuleNotFoundError: No module named 'psutil'" kaldırıldı.
-- psutil bağımlılığı projeden tamamen çıkarıldı.
-- Oyun çalışıyor mu kontrolü Windows'un yerleşik işlem API'siyle yapılır.
-- GitHub, oluşturduğu EXE'yi --self-test ile gerçek olarak çalıştırmadan artifact üretmez.
+DÜZELTİLEN SORUN
+- Saat yanındaki TG_CONTROLLER_PRO simgesinin hiç oluşmaması.
+- Program X ile gizlenince yeniden açılamaması.
+- Tepsi servisi hata verdiğinde hatanın sessizce kaybolması.
+
+YENİ DAVRANIŞ
+1. Program tepsi simgesinin gerçekten hazır olduğunu kontrol eder.
+2. Simge oluşmazsa pencereyi gizlemez ve gerçek hata mesajını gösterir.
+3. Program gizliyken EXE'ye tekrar çift tıklarsanız mevcut pencere açılır.
+4. Aynı programın ikinci kopyası açılmaz.
+5. PyInstaller paketine pystray Windows arka ucu açıkça eklenmiştir.
 
 YÜKLEME
-1. Bu ZIP'in içindeki tüm dosya ve klasörleri GitHub deposuna yükleyin.
-2. .github görünmezse WORKFLOW_KOPYASI_BUILD_PRO_V4_1.yml içeriğini
-   .github/workflows/build.yml dosyasına yapıştırın.
-3. Actions → Build TG_CONTROLLER_PRO V4.1 HOTFIX çalışmasını açın.
-4. Build Windows Manager yeşil olmalıdır.
-5. TG_CONTROLLER_PRO_MANAGER_V4_1_WINDOWS paketini indirin.
-6. TG_CONTROLLER_PRO_MANAGER_V4_1.exe dosyasını çalıştırın.
+1. ZIP içeriğini GitHub deposuna yükleyin.
+2. Actions → Build TG_CONTROLLER_PRO V4.2 TRAY HOTFIX çalışmasını açın.
+3. TG_CONTROLLER_PRO_MANAGER_V4_2_WINDOWS paketini indirin.
+4. TG_CONTROLLER_PRO_MANAGER_V4_2.exe dosyasını çalıştırın.
 
-PICO İÇİN
-- Controller/P1/P2 firmware kodu bu hotfixte değiştirilmedi.
-- Daha önce V4 UF2 yüklediyseniz Pico'lara yeniden UF2 yüklemeniz gerekmez.
-- İsterseniz workflow'un ürettiği V4 UF2'leri aynı şekilde kullanabilirsiniz.
+PICO
+- Firmware değiştirilmedi.
+- Pico'lara tekrar UF2 yüklemeniz gerekmez.
 
-PARADISE LOST VARSAYILAN YOLU
-C:\ArcadeGames\paradiselost\Farcry_R.exe
+PROGRAMI YENİDEN AÇMA
+- Tepsi simgesi varsa: simgeye çift tıklayın veya sağ tık → Programı Göster.
+- Simge görünmese bile: TG_CONTROLLER_PRO_MANAGER_V4_2.exe dosyasına tekrar çift tıklayın.

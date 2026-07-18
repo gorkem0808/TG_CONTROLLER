@@ -53,13 +53,20 @@ def main() -> int:
 
     instance = SingleInstance()
     if instance.already_running:
-        notify_existing_instance()
+        instance.signal_show_request()
         instance.close()
         return 0
 
     root = tk.Tk()
     try:
-        ManagerApp(root, start_minimized=args.minimized)
+        manager = ManagerApp(root, start_minimized=args.minimized)
+
+        def poll_show_request() -> None:
+            if instance.consume_show_request():
+                manager.show_window()
+            root.after(250, poll_show_request)
+
+        root.after(250, poll_show_request)
         root.mainloop()
     finally:
         instance.close()

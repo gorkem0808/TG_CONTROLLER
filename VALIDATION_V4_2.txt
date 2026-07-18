@@ -1,0 +1,40 @@
+TG_CONTROLLER_PRO V4.2 TRAY HOTFIX DOĞRULAMA
+
+Python py_compile: OK
+Unit testler: OK
+Statik proje doğrulaması: OK
+Tepsi hazır sinyali: EKLENDİ
+Tepsi başlatma hatası görünür rapor: EKLENDİ
+Tepsi yoksa pencereyi gizlememe: EKLENDİ
+PyInstaller pystray._win32: EKLENDİ
+İkinci EXE ile mevcut pencereyi açma: EKLENDİ
+Tek program örneği: KORUNDU
+Pico firmware değişikliği: YOK
+Pico yeniden UF2 yükleme: GEREKMİYOR
+
+Unit test çıktısı:
+
+
+Statik doğrulama çıktısı:
+OK: Controller 10 sn kalibrasyon kısayolu
+OK: Controller 2 dk röle uykusu
+OK: Röle tetik basılı sürece
+OK: Tetik HID basılı sürece
+OK: Bakım modu
+OK: GP2 10 sn makro
+OK: GP19 P1/P2
+OK: 32 örnek kalibrasyon
+OK: Kararsız köşe reddi
+OK: Gerçek dört köşe dönüşümü
+OK: Çift sektör flash
+OK: Global F8
+OK: Sistem tepsisi
+OK: Tek örnek kilidi
+OK: Otomatik COM tanıma
+OK: 0–999 makro bekleme
+OK: Varsayılan Paradise Lost yolu
+OK: psutil bağımlılığı kaldırıldı
+OK: Paketlenmiş EXE self-test
+
+Not: Gerçek sistem tepsisi ve paketlenmiş Windows EXE testi GitHub Actions
+Windows runner ile doğrulanacaktır.

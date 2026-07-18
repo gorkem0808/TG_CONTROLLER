@@ -60,7 +60,20 @@ class ProjectContractTests(unittest.TestCase):
         self.assertNotIn("import psutil", game_text)
         self.assertNotIn("psutil==", requirements)
         self.assertIn("--self-test", workflow)
-        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_1.exe", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_2.exe", workflow)
+
+
+    def test_tray_hotfix_contract(self) -> None:
+        tray = (ROOT / "desktop/tg_controller/tray.py").read_text(encoding="utf-8")
+        ui = (ROOT / "desktop/tg_controller/ui.py").read_text(encoding="utf-8")
+        single = (ROOT / "desktop/tg_controller/single_instance.py").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("ready_event", tray)
+        self.assertIn("self.tray_available", ui)
+        self.assertIn("signal_show_request", single)
+        self.assertIn("consume_show_request", single)
+        self.assertIn("pystray._win32", workflow)
+        self.assertIn("TG_CONTROLLER_PRO_MANAGER_V4_2.exe", workflow)
 
 
 if __name__ == "__main__":
