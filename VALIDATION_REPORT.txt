@@ -1,0 +1,43 @@
+TG_CONTROLLER_PRO V4 FINAL — OTOMATİK DOĞRULAMA
+
+Sürüm: 4.0.0
+
+BAŞARILI KONTROLLER
+- Python compileall: OK
+- Python unittest: 10/10 OK
+- Proje sözleşme/statik kontrol: 17/17 OK
+- Tkinter gerçek başlangıç/kapanış testi (Xvfb): OK
+- Önceki pack/grid TclError: YENİDEN OLUŞMADI
+- Controller C host-stub -Wall -Wextra -Werror syntax: OK
+- Gun P1 C host-stub -Wall -Wextra -Werror syntax: OK
+- USB descriptor C host-stub syntax: OK
+- Varsayılan Paradise Lost yolu: OK
+- 0–999 saniye ayarı: OK
+- 2 dakika röle uykusu: OK
+- Tetik basılı sürece HID/röle: OK
+- Kalibrasyon bakım kilidi: OK
+- 32 örnek + kararsız köşe reddi: OK
+- Bilinear dört-köşe dönüşümü: OK
+- Çift sektör flash: OK
+- Global F8 + sistem tepsisi + tek örnek: OK
+- Otomatik seri rol tanıma: OK
+
+GITHUB ACTIONS
+- checkout@v7 (Node.js 24)
+- setup-python@v7 (Node.js 24)
+- upload-artifact@v6 (Node.js 24)
+- Pico SDK 2.3.0
+- ARM firmware derleme ve .bin boyut kontrolü workflow içinde zorunlu
+- Windows EXE derleme, test ve SHA-256 workflow içinde zorunlu
+
+BU ORTAMDA YAPILAMAYAN KONTROL
+Pico SDK/submodülleri yerel çalışma ortamında bulunmadığı ve doğrudan ağ klonu kapalı olduğu için
+gerçek arm-none-eabi/Pico SDK derlemesi burada çalıştırılamadı. Aynı derleme GitHub Actions
+workflow'una hata halinde artifact üretmeyecek şekilde eklenmiştir. Kullanıcının GitHub'ında iki iş
+yesil olduğunda gerçek ARM ve Windows derlemeleri doğrulanmış olur.
+
+SAHA TESTİ GEREKENLER
+- Gerçek röle modülünün aktif LOW/HIGH polaritesi
+- Titreşim motoru sürücüsü ve flyback diyot bağlantısı
+- Potansiyometre mekanik yönleri ve gerçek dört köşe kalibrasyon kalitesi
+- Paradise Lost operator kontrollerinin gerçek klavye eşlemesi ve kesin Credits Per Play 4→1 dizisi

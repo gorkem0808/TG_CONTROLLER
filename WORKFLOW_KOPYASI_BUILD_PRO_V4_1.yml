@@ -1,0 +1,127 @@
+name: Build TG_CONTROLLER_PRO V4.1 HOTFIX
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firmware:
+    name: Build Controller and Guns
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v7
+
+      - name: ARM derleyiciyi kur
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+      - name: Pico SDK 2.3.0 indir
+        run: |
+          git clone --depth 1 --branch 2.3.0 --recurse-submodules \
+            https://github.com/raspberrypi/pico-sdk.git "$RUNNER_TEMP/pico-sdk"
+          echo "PICO_SDK_PATH=$RUNNER_TEMP/pico-sdk" >> "$GITHUB_ENV"
+
+      - name: CMake yapılandır
+        run: cmake -S . -B build -G Ninja -DPICO_BOARD=pico -DCMAKE_BUILD_TYPE=Release
+
+      - name: Üç firmware'i derle
+        run: cmake --build build --target TG_CONTROLLER TG_GUN_P1 TG_GUN_P2
+
+      - name: Ayrılmış flash alanını doğrula
+        run: |
+          python scripts/check_firmware_size.py \
+            build/TG_CONTROLLER.bin \
+            build/TG_GUN_P1.bin \
+            build/TG_GUN_P2.bin
+
+      - name: UF2 paketini hazırla
+        run: |
+          mkdir -p artifact
+          cp build/TG_CONTROLLER.uf2 artifact/TG_CONTROLLER_PRO_CONTROLLER_V4.uf2
+          cp build/TG_GUN_P1.uf2 artifact/TG_CONTROLLER_PRO_GUN_P1_V4.uf2
+          cp build/TG_GUN_P2.uf2 artifact/TG_CONTROLLER_PRO_GUN_P2_V4.uf2
+          sha256sum artifact/*.uf2 > artifact/SHA256SUMS_UF2.txt
+
+      - name: UF2 dosyalarını yükle
+        uses: actions/upload-artifact@v6
+        with:
+          name: TG_CONTROLLER_PRO_V4_ALL_UF2
+          path: artifact/
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows Manager
+    runs-on: windows-2025
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v7
+
+      - name: Python kur
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: desktop/requirements-build.txt
+
+      - name: Bağımlılıkları kur
+        run: python -m pip install --upgrade pip -r desktop/requirements-build.txt
+
+      - name: Python sözdizimi ve testler
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = "desktop"
+          python -m compileall -q desktop tests scripts
+          python -m unittest discover -s tests -v
+          python scripts/static_validation.py
+
+      - name: Windows EXE üret
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --windowed `
+            --paths desktop `
+            --collect-all pystray `
+            --collect-all PIL `
+            --collect-submodules serial `
+            --hidden-import serial.tools.list_ports_windows `
+            --name TG_CONTROLLER_PRO_MANAGER_V4_1 `
+            desktop/app.py
+
+      - name: Paketlenmiş EXE açılış testi
+        shell: pwsh
+        run: |
+          $process = Start-Process `
+            -FilePath dist/TG_CONTROLLER_PRO_MANAGER_V4_1.exe `
+            -ArgumentList "--self-test" `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Paketlenmiş EXE self-test başarısız. ExitCode=$($process.ExitCode)"
+          }
+
+      - name: Windows paketini hazırla
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifact | Out-Null
+          Copy-Item dist/TG_CONTROLLER_PRO_MANAGER_V4_1.exe artifact/
+          Copy-Item 00_BASLA.txt artifact/
+          Copy-Item Startup_V4_1.bat artifact/
+          Copy-Item docs/EKSIKLER_KAPATMA_RAPORU.md artifact/
+          $hash = (Get-FileHash artifact/TG_CONTROLLER_PRO_MANAGER_V4_1.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash *TG_CONTROLLER_PRO_MANAGER_V4_1.exe" | Set-Content artifact/SHA256SUMS_WINDOWS.txt
+
+      - name: Windows paketini yükle
+        uses: actions/upload-artifact@v6
+        with:
+          name: TG_CONTROLLER_PRO_MANAGER_V4_1_WINDOWS
+          path: artifact/
+          if-no-files-found: error
